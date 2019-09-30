@@ -13,8 +13,7 @@ class QuestionsService():
                     "image": "http://localhost:8000/images/1.png"}
         return question
 
-    @classmethod
-    def check_answers(cls, question_id, user_choices):
-        question = cls.load_question(question_id)
+    @staticmethod
+    def check_answers(question, user_choices):
         correct_choices = [choice['id'] for choice in question['choices'] if choice['is_correct']]
         return sorted(correct_choices) == sorted(user_choices)

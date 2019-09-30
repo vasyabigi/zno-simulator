@@ -27,5 +27,8 @@ class AnswersResource():
         """Submit answer for given question_id. Verify answer and return result."""
         # TODO: verify input, maybe via swagger
         choices = req.media.get('choices', [])
-        resp.body = json.dumps(QuestionsService.check_answers(question_id, choices))
+        question = QuestionsService.load_question(question_id)
+        resp.body = json.dumps({"is_correct": QuestionsService.check_answers(question, choices),
+                                "choices": question['choices'],
+                                "explanation": question.get('explanation')})
         resp.status = falcon.HTTP_200
