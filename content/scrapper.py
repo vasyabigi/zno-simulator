@@ -7,6 +7,8 @@ from urllib.parse import urljoin
 import aiohttp
 from bs4 import BeautifulSoup
 
+# TODO(Vasyl): Add CLI parameter to omit scrapping step
+SHOULD_SCRAPE_OSVITA_UA = True
 
 API_BASE = "https://zno.osvita.ua/"
 API_EXAM_TEST_URL = urljoin(API_BASE, "users/znotest/highload/")
@@ -24,13 +26,13 @@ async def post(session, url, data):
         return await response.text()
 
 
-async def osvita_to_json():
+async def parse_osvita_ua_questions():
     print(f"START: ({time.strftime('%X')})")
 
     subject_questions = []
     async with aiohttp.ClientSession() as session:
-        resposne_content = await fetch(session, API_BASE)
-        soup = BeautifulSoup(resposne_content, "html.parser")
+        response_content = await fetch(session, API_BASE)
+        soup = BeautifulSoup(response_content, "html.parser")
 
         for subject_data in soup.find_all(attrs={"class": "test-item"}):
             subject_questions.append(await parse_subject(session, subject_data))
@@ -54,14 +56,14 @@ async def parse_subject(session, subject_data):
 
     tasks = []
     for exam_data in subject_soup.find_all("li", attrs={"class": "test-item"}):
-        tasks.append(parse_exam_questoins(session, exam_data, subject_title))
+        tasks.append(parse_exam_questions(session, exam_data, subject_title))
 
     exams_questions = await asyncio.gather(*tasks)
 
     return list(chain(*exams_questions))
 
 
-async def parse_exam_questoins(session, exam_data, subject_title):
+async def parse_exam_questions(session, exam_data, subject_title):
     questions = []
 
     exam_href = exam_data.find("a").attrs["href"]
@@ -107,4 +109,16 @@ async def parse_exam_questoins(session, exam_data, subject_title):
 
     print(f"Finished ({time.strftime('%X')}): {exam_title}")
 
+    # Save questions to local folder
+    with open("raw_questions.json", "w") as f:
+        json.dump(questions, f)
+
     return questions
+
+
+async def get_osvita_ua_questions():
+    if not SHOULD_SCRAPE_OSVITA_UA:
+        with open("raw_questions.json", "r") as f:
+            return json.loads(f.read())
+
+    return await parse_osvita_ua_questions()

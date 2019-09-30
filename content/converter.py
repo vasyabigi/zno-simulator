@@ -1,7 +1,15 @@
 import string
 import uuid
 
+import html2text
+import lxml.html.clean as clean
 from bs4 import BeautifulSoup
+
+cleaner = clean.Cleaner(
+    safe_attrs_only=True, safe_attrs=frozenset(), remove_tags=["em"]
+)
+
+markdown = html2text.HTML2Text()
 
 QUESTION_TYPE_URL_TO_KIND = {
     "/dovidka/viditestiv/1/": "single-choice",
@@ -9,22 +17,6 @@ QUESTION_TYPE_URL_TO_KIND = {
 }
 
 SUPPORTED_QUESTION_TYPES = ("single-choice",)
-
-
-def raw_to_internal(raw_questions):
-    questions = []
-
-    for raw_question in raw_questions:
-        question_converter = QuestionConverter(raw_question)
-
-        if not question_converter.is_valid():
-            continue
-
-        questions.append(question_converter.to_internal())
-
-    print(f"Converted {len(questions)}/{len(raw_questions)} questions.")
-
-    return questions
 
 
 class QuestionConverter:
@@ -43,6 +35,30 @@ class QuestionConverter:
             "content": self.get_content(),
             "explanation": self.get_explanation(),
         }
+
+    @staticmethod
+    def bulk_to_internal(raw_questions):
+        """
+        Converts raw html questions from osvita.ua to well-formatted json structure.
+
+        """
+        questions = []
+
+        for raw_question in raw_questions:
+            question_converter = QuestionConverter(raw_question)
+
+            if not question_converter.is_valid():
+                continue
+
+            questions.append(question_converter.to_internal())
+
+        print(f"Converted {len(questions)}/{len(raw_questions)} questions.")
+
+        return questions
+
+    @staticmethod
+    def soup_to_md(soup):
+        return markdown.handle(cleaner.clean_html(str(soup)))
 
     def is_valid(self):
         return self.get_kind() in SUPPORTED_QUESTION_TYPES
@@ -63,10 +79,12 @@ class QuestionConverter:
         choices = []
 
         for index, dom_choice in enumerate(dom_choices):
+            dom_choice.find("span", attrs={"class": "q-number"}).extract()
+
             choices.append(
                 {
                     "id": str(uuid.uuid4()),
-                    "content": str(dom_choice),
+                    "content": self.soup_to_md(dom_choice),
                     "is_correct": "ok" in dom_answers[index].attrs["class"],
                 }
             )
@@ -84,7 +102,9 @@ class QuestionConverter:
         return choices
 
     def get_content(self):
-        return str(self.content_post.find("div", attrs={"class": "q-txt"}))
+        return self.soup_to_md(self.content_post.find("div", attrs={"class": "q-txt"}))
 
     def get_explanation(self):
-        return str(self.content_post.find("div", attrs={"class": "explanation"}))
+        return self.soup_to_md(
+            self.content_post.find("div", attrs={"class": "explanation"})
+        )
