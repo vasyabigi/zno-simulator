@@ -1,11 +1,12 @@
 import json
+import asyncio
 
 from .scrapper import osvita_to_json
 from .converter import raw_to_internal
 
 
-def main():
-    raw_questions = osvita_to_json()
+async def main():
+    raw_questions = await osvita_to_json()
 
     with open("raw_questions.json", "w") as f:
         json.dump(raw_questions, f)
@@ -18,4 +19,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main())
