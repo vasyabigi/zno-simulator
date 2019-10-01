@@ -1,18 +1,12 @@
 API provides following endpoints:
 
-GET /questions/{question_id} - get question with answer options by id
+GET /questions/random - get random question
 
-Examples:
+Example:
 
-    1)
-    ```
-    $ curl <zno_simulator_api_host>/questions/1
-    {"id": 1, "content": "Ultimate Question of Life, the Universe, and Everything", "choices": [{"id": 1, "content": "42"}, {"id": 2, "content": "24"}], "image": "http://<zno_simulator_api_host>/images/1.png"}
-    ```
-    2)
     ```
     $ curl <zno_simulator_api_host>/questions/random
-    {"id": 69, "content": "Who lives on the bottom of the Ocean?", "choices": [{"id": 1, "content": "Cthulhu"}, {"id": 2, "content": "SpongeBob"}, {"id": 3, "content": "Slardar"}], "image": "http://<zno_simulator_api_host>/images/69.png"}
+    {"id": 1, "content": "Ultimate Question of Life, the Universe, and Everything", "choices": [{"id": 1, "content": "42"}, {"id": 2, "content": "24"}], "image": "http://<zno_simulator_api_host>/images/1.png"}
     ```
 
 POST /questions/{question_id}/answers - submit answer and get check whether answer is correct
