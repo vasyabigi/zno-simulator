@@ -9,13 +9,15 @@ class QuestionsResource():
 
     """Get questions via QuestionsService"""
 
-    def on_get(self, req, resp, question_id):
+    def on_get(self, req, resp):
         """Return question by given question_id. Return random question if question_id = 0."""
-        question = QuestionsService.load_question(question_id)
-        # remove field "is_correct" from choices
-        for choice in question['choices']:
-            del choice['is_correct']
-        resp.body = json.dumps(QuestionsService.load_question(question_id))
+        question = QuestionsService.load_random_question()
+        filtered_question = {'id': question['id'],
+                             'content': question['content'],
+                             'choices': [{'id': choice['id'], 'content': choice['content']}
+                                         for choice in question['choices']],
+                             'image': question['image']}
+        resp.media = filtered_question
         resp.status = falcon.HTTP_200
 
 
@@ -27,8 +29,8 @@ class AnswersResource():
         """Submit answer for given question_id. Verify answer and return result."""
         # TODO: verify input, maybe via swagger
         choices = req.media.get('choices', [])
-        question = QuestionsService.load_question(question_id)
-        resp.body = json.dumps({"is_correct": QuestionsService.check_answers(question, choices),
-                                "choices": question['choices'],
-                                "explanation": question.get('explanation')})
+        question = QuestionsService.load_question_by_id(question_id)
+        resp.media = {"is_correct": QuestionsService.check_answers(question, choices),
+                      "choices": question['choices'],
+                      "explanation": question.get('explanation')}
         resp.status = falcon.HTTP_200
