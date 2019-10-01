@@ -1,5 +1,7 @@
+import json
 import logging
 
+import requests
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup
 from telegram.ext import (
     Updater,
@@ -22,42 +24,27 @@ CROSS_MARK_BLACK = "✖"
 
 def _get_api_question():
     """Get question from API."""
-    return {
-        "id": 1,
-        "content": "На перший склад падає наголос у всіх словах, ОКРІМ",
-        "choices": [
-            {"id": 1, "content": "причіп"},
-            {"id": 2, "content": "косий"},
-            {"id": 3, "content": "жалюзі"},
-            {"id": 4, "content": "випадок"},
-        ],
-    }
+    logger.debug(f"Getting question from {config.get_question_url}")
+    api_response = requests.get(config.get_question_url)
+    logger.debug(
+        f"API response {api_response.status_code} received: {api_response.content}"
+    )
+    return json.loads(api_response.content)
 
 
-def _post_api_answer(choise_id):
+def _post_api_answer(question_id, choice_id):
     """Post chosen answer and get the response with details."""
-    logger.info("send POST body: {choices: [id]}")
-    return {
-        "id": 1,
-        "is_correct": True if choise_id == "3" else False,
-        "choices": [
-            {"id": 1, "content": "причіп", "is_correct": False},
-            {"id": 2, "content": "косий", "is_correct": False},
-            {"id": 3, "content": "жалюзі", "is_correct": True},
-            {"id": 4, "content": "випадок", "is_correct": False},
-        ],
-        "explanation": "\n\n*ТЕМА: Орфоепія. Наголос, наголошені й ненаголошені склади.*\n\n"
-        "Завдання перевіряє рівень ваших орфоепічних навичок.\n\n"
-        "У подібних завданнях зовнішнього незалежного оцінювання завжди пропонують"
-        "поширені слова, у яких часто трапляються помилки в наголошуванні. У 2018 році"
-        "вперше учасникам ЗНО було рекомендовано перелік слів з наголосами. Цей"
-        "своєрідний словник розміщено на сайті УЦОЯО в Програмі ЗНО.\n\n"
-        "Правильно наголошені слова треба вимовляти так: пр *И* чіп, ,к *О* сий, в *И*"
-        "падок, жалюз *І*.\n\n*Відповідь – В.*\n\n",
-    }
+    logger.debug(f"Sending answer to {config.post_answer_url}")
+    api_response = requests.post(
+        config.post_answer_url.format(id=question_id), json={"choices": [choice_id]}
+    )
+    logger.debug(
+        f"API response {api_response.status_code} received: {api_response.content}"
+    )
+    return json.loads(api_response.content)
 
 
-def start(update, context):
+def handle_start(update, context):
     """Displaying the starting message when bot starts."""
     reply_keyboard = [["/get"]]
     markup = ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True)
@@ -68,43 +55,76 @@ def start(update, context):
     )
 
 
-def get(update, context):
+def handle_get(update, context):
     """Send user a question and answers options keyboard."""
     question = _get_api_question()
-    choices_string = "\n".join(f"- {q['content']}" for q in question["choices"])
     keyboard = [
-        [InlineKeyboardButton(choice["content"], callback_data=choice["id"])]
+        [
+            InlineKeyboardButton(
+                choice["content"],
+                callback_data=_get_choice_json(question, choice),
+                parse_mode="Markdown",
+            )
+        ]
         for choice in question["choices"]
     ]
 
     reply_markup = InlineKeyboardMarkup(keyboard)
     update.message.reply_text(
-        question["content"] + "\n\n" + choices_string,
-        reply_markup=reply_markup,
-        parse_mode="Markdown",
+        _get_question_str(question), reply_markup=reply_markup, parse_mode="Markdown"
     )
 
 
-def button(update, context):
-    """Handle button click."""
-    query = update.callback_query
-    answer = _post_api_answer(query.data)
+def _get_choice_json(question, choice):
+    return json.dumps({"c_id": choice["id"], "q_id": question["id"]})
 
-    question = query.message.text.split("\n\n")[0]
-    choices_list_marked = [
-        f"{CHECK_MARK_BLACK if q['is_correct'] is True else CROSS_MARK_BLACK} {q['content']}"
-        for q in answer["choices"]
-    ]
-    choices_string = "\n".join(choices_list_marked)
-    mark = CHECK_MARK_BUTTON if answer["is_correct"] is True else CROSS_MARK
-    [selected] = [
+
+def _get_question_str(question):
+    choices_str = "\n".join(
+        "- {}".format(choice["content"].strip("\n")) for choice in question["choices"]
+    )
+    # TODO: remove strip after api update
+    return question["content"].strip("\n") + "\n\n" + choices_str
+
+
+def _get_updated_question_str(query, answer, callback_data):
+    # FIXME: investigate better way to separate question and choices
+    question = "\n\n".join(query.message.text.split("\n\n")[0:-1])
+    # TODO: remove strip after api update
+    choices_string = "\n".join(
+        "{mark} {choice}".format(
+            mark=_get_black_mark(choice), choice=choice["content"].strip("\n")
+        )
+        for choice in answer["choices"]
+    )
+
+    [selected_choice] = [
         choice["content"]
         for choice in answer["choices"]
-        if choice["id"] == int(query.data)
+        if choice["id"] == callback_data["c_id"]
     ]
+    return (
+        f"{question}\n\n{choices_string}\n\n{_get_mark(answer)} "
+        f"_Ви обрали: {selected_choice}_"
+    )
+
+
+def _get_mark(answer):
+    return CHECK_MARK_BUTTON if answer["is_correct"] is True else CROSS_MARK
+
+
+def _get_black_mark(choice):
+    return CHECK_MARK_BLACK if choice["is_correct"] is True else CROSS_MARK_BLACK
+
+
+def handle_button(update, context):
+    """Handle button click."""
+    query = update.callback_query
+    callback_data = json.loads(query.data)
+    answer = _post_api_answer(callback_data["q_id"], callback_data["c_id"])
 
     query.edit_message_text(
-        text=f"{question}\n\n{choices_string}\n\n{mark} _Обрана відповідь: {selected}_",
+        text=_get_updated_question_str(query, answer, callback_data),
         parse_mode="Markdown",
     )
     context.bot.send_message(
@@ -112,9 +132,9 @@ def button(update, context):
     )
 
 
-def help(update, context):
+def handle_help(update, context):
     """Show short help message with list of available commands."""
-    update.message.reply_text("Use /start to test this bot.")
+    update.message.reply_text("Напишіть /get щоб отримати питання.")
 
 
 def error(update, context):
@@ -126,11 +146,11 @@ def main():
     # Create the Updater and pass it your bot's token.
     updater = Updater(config.telegram_token, use_context=True)
 
-    updater.dispatcher.add_handler(CommandHandler("start", start))
-    updater.dispatcher.add_handler(CommandHandler("get", get))
-    updater.dispatcher.add_handler(CommandHandler("help", help))
-    updater.dispatcher.add_handler(CallbackQueryHandler(button))
-    updater.dispatcher.add_handler(MessageHandler(Filters.text, start))
+    updater.dispatcher.add_handler(CommandHandler("start", handle_start))
+    updater.dispatcher.add_handler(CommandHandler("get", handle_get))
+    updater.dispatcher.add_handler(CommandHandler("help", handle_help))
+    updater.dispatcher.add_handler(CallbackQueryHandler(handle_button))
+    updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_start))
     updater.dispatcher.add_error_handler(error)
 
     # Start the Bot
