@@ -1,5 +1,3 @@
-import json
-
 import falcon
 
 from zno_services import QuestionsService
@@ -16,7 +14,7 @@ class QuestionsResource():
                              'content': question['content'],
                              'choices': [{'id': choice['id'], 'content': choice['content']}
                                          for choice in question['choices']],
-                             'image': question['image']}
+                             }
         resp.media = filtered_question
         resp.status = falcon.HTTP_200
 
