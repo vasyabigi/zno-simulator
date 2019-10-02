@@ -9,6 +9,7 @@ from telegram.ext import (
     MessageHandler,
     Filters,
 )
+from telegram.parsemode import ParseMode
 
 import config
 from api_utils import get_random_question, post_answer
@@ -35,7 +36,7 @@ def handle_get(update, context):
             InlineKeyboardButton(
                 choice["content"],
                 callback_data=question.choice_json(choice),
-                parse_mode="Markdown",
+                parse_mode=ParseMode.MARKDOWN,
             )
         ]
         for choice in question.choices
@@ -43,7 +44,7 @@ def handle_get(update, context):
 
     reply_markup = InlineKeyboardMarkup(keyboard)
     update.message.reply_text(
-        question.question_str(), reply_markup=reply_markup, parse_mode="Markdown"
+        question.question_str(), reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN
     )
 
 
@@ -54,10 +55,10 @@ def handle_button(update, context):
     answer = post_answer(callback_data["q_id"], callback_data["c_id"])
 
     query.edit_message_text(
-        text=answer.marked_question_str(query, callback_data), parse_mode="Markdown"
+        text=answer.marked_question_str(query, callback_data), parse_mode=ParseMode.MARKDOWN
     )
     context.bot.send_message(
-        text=answer.explanation, chat_id=query.message.chat_id, parse_mode="Markdown"
+        text=answer.explanation, chat_id=query.message.chat_id, parse_mode=ParseMode.MARKDOWN
     )
 
 

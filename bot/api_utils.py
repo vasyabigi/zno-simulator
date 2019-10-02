@@ -20,6 +20,7 @@ CROSS_MARK_BLACK = "✖"
 def get_random_question():
     """Get question from API."""
     logger.debug(f"Getting question from {QUESTION_URL}")
+    # TODO handle server status != 200
     api_response = requests.get(QUESTION_URL)
     logger.debug(
         f"API response {api_response.status_code} received: {api_response.content}"
@@ -32,6 +33,7 @@ def post_answer(question_id, choice_id):
     logger.debug(
         f"Sending answer {choice_id} for question {question_id} to {ANSWER_URL}"
     )
+    # TODO handle server status != 200
     api_response = requests.post(
         ANSWER_URL.format(id=question_id), json={"choices": [choice_id]}
     )
@@ -46,19 +48,15 @@ class TelegramQuestion:
 
     def __init__(self, question_data):
         self.question = json.loads(question_data)
-        self.question_choices = self.question["choices"]
+        self.choices = self.question["choices"]
 
     def question_str(self):
         choices_str = "\n".join(
             "- {}".format(choice["content"].strip("\n"))
-            for choice in self.question["choices"]
+            for choice in self.choices
         )
         # TODO: remove strip after api update
         return self.question["content"].strip("\n") + "\n\n" + choices_str
-
-    @property
-    def choices(self):
-        return self.question_choices
 
     def choice_json(self, choice):
         return json.dumps({"c_id": choice["id"], "q_id": self.question["id"]})
