@@ -30,7 +30,7 @@ class QuestionConverter:
             "id": str(uuid.uuid4()),
             "subject": self.raw_question["subject"],
             "exam": self.raw_question["exam"],
-            "kind": self.get_kind(),
+            "kind": self.get_question_kind(),
             "choices": self.get_choices(),
             "content": self.get_content(),
             "explanation": self.get_explanation(),
@@ -57,13 +57,22 @@ class QuestionConverter:
         return questions
 
     @staticmethod
-    def soup_to_md(soup):
+    def soup_to_markdown(soup):
+        """
+        Converts beautiful soup html into the markdown format.
+
+        """
         return markdown.handle(cleaner.clean_html(str(soup)))
 
     def is_valid(self):
-        return self.get_kind() in SUPPORTED_QUESTION_TYPES
+        """
+        Checks if question is valid for our internal use-cases.
+        Currently, we're supporing single-choice questions with limitted length only.
 
-    def get_kind(self):
+        """
+        return self.get_question_kind() in SUPPORTED_QUESTION_TYPES
+
+    def get_question_kind(self):
         links = self.content_get.find_all("a")
 
         if not links:
@@ -84,7 +93,7 @@ class QuestionConverter:
             choices.append(
                 {
                     "id": str(uuid.uuid4()),
-                    "content": self.soup_to_md(dom_choice),
+                    "content": self.soup_to_markdown(dom_choice),
                     "is_correct": "ok" in dom_answers[index].attrs["class"],
                 }
             )
@@ -102,9 +111,9 @@ class QuestionConverter:
         return choices
 
     def get_content(self):
-        return self.soup_to_md(self.content_post.find("div", attrs={"class": "q-txt"}))
+        return self.soup_to_markdown(self.content_post.find("div", attrs={"class": "q-txt"}))
 
     def get_explanation(self):
-        return self.soup_to_md(
+        return self.soup_to_markdown(
             self.content_post.find("div", attrs={"class": "explanation"})
         )

@@ -7,10 +7,11 @@ from urllib.parse import urljoin
 import aiohttp
 from bs4 import BeautifulSoup
 
+from .config import API_BASE
+
 # TODO(Vasyl): Add CLI parameter to omit scrapping step
 SHOULD_SCRAPE_OSVITA_UA = True
 
-API_BASE = "https://zno.osvita.ua/"
 API_EXAM_TEST_URL = urljoin(API_BASE, "users/znotest/highload/")
 
 SUPPORTED_SUBJECTS = ["Українська мова і література"]
