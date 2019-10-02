@@ -1,3 +1,4 @@
+import re
 import string
 import uuid
 
@@ -20,14 +21,15 @@ SUPPORTED_QUESTION_TYPES = ("single-choice",)
 
 
 class QuestionConverter:
-    def __init__(self, raw_question):
+    def __init__(self, index, raw_question):
+        self.index = index
         self.raw_question = raw_question
         self.content_get = BeautifulSoup(raw_question["content_get"], "html.parser")
         self.content_post = BeautifulSoup(raw_question["content_post"], "html.parser")
 
     def to_internal(self):
         return {
-            "id": str(uuid.uuid4()),
+            "id": self.index,
             "subject": self.raw_question["subject"],
             "exam": self.raw_question["exam"],
             "kind": self.get_question_kind(),
@@ -44,8 +46,8 @@ class QuestionConverter:
         """
         questions = []
 
-        for raw_question in raw_questions:
-            question_converter = QuestionConverter(raw_question)
+        for index, raw_question in enumerate(raw_questions):
+            question_converter = QuestionConverter(index, raw_question)
 
             if not question_converter.is_valid():
                 continue
@@ -62,7 +64,16 @@ class QuestionConverter:
         Converts beautiful soup html into the markdown format.
 
         """
-        return markdown.handle(cleaner.clean_html(str(soup)))
+        output = markdown.handle(cleaner.clean_html(str(soup)))
+
+        if output.startswith("\n\n"):
+            output = output[2:]
+
+        if output.endswith("\n\n"):
+            output = output[:-2]
+
+        p = re.compile(r"[^n](\\n)[^\\]")
+        return p.sub(' ', output)
 
     def is_valid(self):
         """
@@ -88,12 +99,14 @@ class QuestionConverter:
         choices = []
 
         for index, dom_choice in enumerate(dom_choices):
-            dom_choice.find("span", attrs={"class": "q-number"}).extract()
+            letter = self.soup_to_markdown(
+                dom_choice.find("span", attrs={"class": "q-number"}).extract()
+            )
 
             choices.append(
                 {
-                    "id": str(uuid.uuid4()),
-                    "content": self.soup_to_markdown(dom_choice),
+                    "id": index,
+                    "content": f"*{letter}*: {self.soup_to_markdown(dom_choice)}",
                     "is_correct": "ok" in dom_answers[index].attrs["class"],
                 }
             )
@@ -102,7 +115,7 @@ class QuestionConverter:
             for index, dom_answer in enumerate(dom_answers):
                 choices.append(
                     {
-                        "id": str(uuid.uuid4()),
+                        "id": index,
                         "content": string.ascii_uppercase[index],
                         "is_correct": "ok" in dom_answers[index].attrs["class"],
                     }
@@ -111,7 +124,9 @@ class QuestionConverter:
         return choices
 
     def get_content(self):
-        return self.soup_to_markdown(self.content_post.find("div", attrs={"class": "q-txt"}))
+        return self.soup_to_markdown(
+            self.content_post.find("div", attrs={"class": "q-txt"})
+        )
 
     def get_explanation(self):
         return self.soup_to_markdown(
