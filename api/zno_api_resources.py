@@ -18,8 +18,6 @@ class QuestionsResource():
         """Return question by given question_id. Return random question if question_id = 0."""
         try:
             question = QuestionsService.load_random_question()
-
-            rollbar.report_message('Loaded question: %s' % str(question))
             resp.media = {'id': question['id'],
                           'content': question['content'],
                           'choices': [{'id': choice['id'], 'content': choice['content']}
@@ -44,7 +42,7 @@ class AnswersResource():
         # TODO: verify input, maybe via swagger
         choices = req.media.get('choices', [])
         try:
-            question = QuestionsService.load_question_by_id(question_id)
+            question = QuestionsService.load_question_by_id(int(question_id))
             resp.media = {'is_correct': QuestionsService.check_answers(question, choices),
                           'choices': question['choices'],
                           'explanation': question.get('explanation')}
