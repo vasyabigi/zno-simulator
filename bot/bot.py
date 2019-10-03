@@ -51,16 +51,16 @@ def handle_get(update, context):
 
     reply_markup = InlineKeyboardMarkup(keyboard)
     update.message.reply_text(
-        question.question_str(),
+        question.question_str,
         reply_markup=reply_markup,
         parse_mode=ParseMode.MARKDOWN,
     )
 
 
-def get_explanation(query, answer, callback_data):
+def get_explanation(query, answer):
     """Handle 'explain' button click."""
     query.edit_message_text(
-        text=answer.explanation(query, callback_data),
+        text=answer.explanation(query),
         parse_mode=ParseMode.MARKDOWN
     )
 
@@ -72,7 +72,7 @@ def handle_button(update, context):
 
     # checking if we have 'explain' button hit
     if context.user_data.get("answer"):
-        get_explanation(query, context.user_data.pop("answer"), callback_data)
+        get_explanation(query, context.user_data.pop("answer"))
         return
 
     answer = post_answer(callback_data["q_id"], callback_data["c_id"])

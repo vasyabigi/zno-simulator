@@ -54,12 +54,12 @@ class TelegramQuestion:
             for choice in self.choices
         ]
 
+    @property
     def question_str(self):
         choices_str = "\n".join(
-            "- {}".format(choice["content"].strip("\n")) for choice in self.choices
+            f"- {choice['content']}" for choice in self.choices
         )
-        # TODO: remove strip after api update
-        return self.question["content"].strip("\n") + "\n\n" + choices_str
+        return self.question["content"] + "\n\n" + choices_str
 
     def choice_json(self, choice):
         return json.dumps({"c_id": choice["id"], "q_id": self.question["id"]})
@@ -71,12 +71,11 @@ class TelegramAnswer:
     def __init__(self, answer_data):
         self.answer = json.loads(answer_data)
 
-    def explanation(self, query, callback_data):
-        # TODO: remove strip
-        marked_answer = self.marked_question_str(query, callback_data).split("\n\n", 2)[-1]
+    def explanation(self, query):
+        marked_answer = query.message.text_markdown
         explanation_str = (
             self.answer["explanation"]
-            if self.answer["explanation"].strip("\n") != "None"
+            if self.answer["explanation"] != "None"
             else "ъуъ!"
         )
         return f"{marked_answer}\n\n{explanation_str}"
@@ -84,15 +83,10 @@ class TelegramAnswer:
     def marked_question_str(self, query, callback_data):
         # FIXME: investigate better way to separate question and choices
         question = "\n\n".join(query.message.text.split("\n\n")[0:-1])
-        # TODO: remove strip after api update
         choices_string = "\n".join(
-            "{mark} {choice}".format(
-                mark=self.get_black_mark(choice),
-                choice=choice["content"].strip("\n")
-            )
+            f"{self.get_black_mark(choice)} {choice['content']}"
             for choice in self.answer["choices"]
         )
-
         [selected_choice] = [
             choice["content"]
             for choice in self.answer["choices"]
@@ -100,7 +94,7 @@ class TelegramAnswer:
         ]
         return (
             f"{question}\n\n{choices_string}\n\n{self.get_mark(self.answer)} "
-            f"_Ви обрали: {selected_choice}_"
+            f"*Ви обрали:* {selected_choice}"
         )
 
     @staticmethod
