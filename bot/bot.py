@@ -14,9 +14,11 @@ from telegram.parsemode import ParseMode
 import config
 from api_utils import get_random_question, post_answer
 
+EXPLANATION_STR = "Пояснення"
+GREETING_STR = "Привіт! Напишіть /get щоб отримати питання!"
+HELP_STR = "Напишіть /get щоб отримати питання."
 
 logging.basicConfig(level=logging.INFO)
-
 logger = logging.getLogger(__name__)
 
 
@@ -26,23 +28,25 @@ def handle_start(update, context):
     markup = ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True)
     context.bot.send_message(
         chat_id=update.message.chat_id,
-        text="Привіт! Напиши /get щоб отримати питання!",
-        reply_markup=markup,
+        text=GREETING_STR,
+        reply_markup=markup
     )
 
 
 def handle_get(update, context):
     """Send user a question and answers options keyboard."""
+    context.user_data.clear()
+
     question = get_random_question()
     keyboard = [
         [
             InlineKeyboardButton(
-                choice["content"],
+                letter,
                 callback_data=question.choice_json(choice),
                 parse_mode=ParseMode.MARKDOWN,
             )
+            for letter, choice in zip(question.choices_letters, question.choices)
         ]
-        for choice in question.choices
     ]
 
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -53,26 +57,49 @@ def handle_get(update, context):
     )
 
 
+def get_explanation(query, answer, callback_data):
+    """Handle 'explain' button click."""
+    query.edit_message_text(
+        text=answer.explanation(query, callback_data),
+        parse_mode=ParseMode.MARKDOWN
+    )
+
+
 def handle_button(update, context):
     """Handle button click."""
     query = update.callback_query
     callback_data = json.loads(query.data)
+
+    # checking if we have 'explain' button hit
+    if context.user_data.get("answer"):
+        get_explanation(query, context.user_data.pop("answer"), callback_data)
+        return
+
     answer = post_answer(callback_data["q_id"], callback_data["c_id"])
+
+    context.user_data["answer"] = answer
+    keyboard = [
+        [
+            InlineKeyboardButton(
+                EXPLANATION_STR,
+                callback_data=json.dumps(callback_data),
+                parse_mode=ParseMode.MARKDOWN,
+            )
+        ]
+    ]
+
+    reply_markup = InlineKeyboardMarkup(keyboard)
 
     query.edit_message_text(
         text=answer.marked_question_str(query, callback_data),
-        parse_mode=ParseMode.MARKDOWN,
-    )
-    context.bot.send_message(
-        text=answer.explanation,
-        chat_id=query.message.chat_id,
+        reply_markup=reply_markup,
         parse_mode=ParseMode.MARKDOWN,
     )
 
 
 def handle_help(update, context):
     """Show short help message with list of available commands."""
-    update.message.reply_text("Напишіть /get щоб отримати питання.")
+    update.message.reply_text(HELP_STR)
 
 
 def error(update, context):

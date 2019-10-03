@@ -20,10 +20,10 @@ TODO:
 - [x] add bot 'description' message: 
 >Телеграм-бот для підготовки до ЗНО. Отримуйте запитання та пояснення до відповідей - перевірте свої знання. 
 >Натисніть “Start” для початку.
-- [ ] show explanation on button click
+- [X] show explanation on button click
+- [ ] improve logging
 - [ ] cyrillic text on `get` inline button(s) 
 - [ ] update formatting after scraper fix
-- [ ] improve logging
 - [ ] add docker container
 - [ ] rewrite using serverless 
 

@@ -49,11 +49,14 @@ class TelegramQuestion:
     def __init__(self, question_data):
         self.question = json.loads(question_data)
         self.choices = self.question["choices"]
+        self.choices_letters = [
+            f"   {choice['content'].split(':')[0]}   "
+            for choice in self.choices
+        ]
 
     def question_str(self):
         choices_str = "\n".join(
-            "- {}".format(choice["content"].strip("\n"))
-            for choice in self.choices
+            "- {}".format(choice["content"].strip("\n")) for choice in self.choices
         )
         # TODO: remove strip after api update
         return self.question["content"].strip("\n") + "\n\n" + choices_str
@@ -68,14 +71,15 @@ class TelegramAnswer:
     def __init__(self, answer_data):
         self.answer = json.loads(answer_data)
 
-    @property
-    def explanation(self):
+    def explanation(self, query, callback_data):
         # TODO: remove strip
-        return (
+        marked_answer = self.marked_question_str(query, callback_data).split("\n\n", 2)[-1]
+        explanation_str = (
             self.answer["explanation"]
             if self.answer["explanation"].strip("\n") != "None"
             else "ъуъ!"
         )
+        return f"{marked_answer}\n\n{explanation_str}"
 
     def marked_question_str(self, query, callback_data):
         # FIXME: investigate better way to separate question and choices
@@ -83,7 +87,8 @@ class TelegramAnswer:
         # TODO: remove strip after api update
         choices_string = "\n".join(
             "{mark} {choice}".format(
-                mark=self.get_black_mark(choice), choice=choice["content"].strip("\n")
+                mark=self.get_black_mark(choice),
+                choice=choice["content"].strip("\n")
             )
             for choice in self.answer["choices"]
         )
