@@ -71,8 +71,12 @@ class QuestionConverter:
         if output.endswith("\n\n"):
             output = output[:-2]
 
-        p = re.compile(r"[^n](\\n)[^\\]")
-        return p.sub(' ', output)
+        # Hacky way to remove new lines but keep paragraphs
+        output = output.replace("\n\n", "TEMP_BREAKER")
+        output = output.replace("\n", " ")
+        output = output.replace("TEMP_BREAKER", "\n\n")
+
+        return output
 
     def is_valid(self):
         """

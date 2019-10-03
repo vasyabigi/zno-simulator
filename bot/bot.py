@@ -14,6 +14,9 @@ from telegram.parsemode import ParseMode
 import config
 from api_utils import get_random_question, post_answer
 
+
+logging.basicConfig(level=logging.INFO)
+
 logger = logging.getLogger(__name__)
 
 
@@ -44,7 +47,9 @@ def handle_get(update, context):
 
     reply_markup = InlineKeyboardMarkup(keyboard)
     update.message.reply_text(
-        question.question_str(), reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN
+        question.question_str(),
+        reply_markup=reply_markup,
+        parse_mode=ParseMode.MARKDOWN,
     )
 
 
@@ -55,10 +60,13 @@ def handle_button(update, context):
     answer = post_answer(callback_data["q_id"], callback_data["c_id"])
 
     query.edit_message_text(
-        text=answer.marked_question_str(query, callback_data), parse_mode=ParseMode.MARKDOWN
+        text=answer.marked_question_str(query, callback_data),
+        parse_mode=ParseMode.MARKDOWN,
     )
     context.bot.send_message(
-        text=answer.explanation, chat_id=query.message.chat_id, parse_mode=ParseMode.MARKDOWN
+        text=answer.explanation,
+        chat_id=query.message.chat_id,
+        parse_mode=ParseMode.MARKDOWN,
     )
 
 
@@ -86,6 +94,7 @@ def main():
     # Start the Bot
     updater.start_polling()
 
+    logger.info("Bot has been started and waiting for messages...")
     # Run the bot until the user presses Ctrl-C
     # or the process receives SIGINT, SIGTERM or SIGABRT
     updater.idle()
