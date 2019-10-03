@@ -5,3 +5,9 @@ __pycache__/
 
 # Editors
 .vscode
+
+# Elastic Beanstalk Files
+.elasticbeanstalk
+
+questions.json
+raw_questions.json

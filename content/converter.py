@@ -1,6 +1,5 @@
 import re
 import string
-import uuid
 
 import html2text
 import lxml.html.clean as clean
