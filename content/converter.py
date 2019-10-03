@@ -65,14 +65,13 @@ class QuestionConverter:
         """
         output = markdown.handle(cleaner.clean_html(str(soup)))
 
-        if output.startswith("\n\n"):
-            output = output[2:]
+        output = output.strip("\n")
+        # Hacky way to remove new lines but keep paragraphs
+        output = output.replace("\n\n", "TEMP_BREAKER")
+        output = output.replace("\n", " ")
+        output = output.replace("TEMP_BREAKER", "\n\n")
 
-        if output.endswith("\n\n"):
-            output = output[:-2]
-
-        p = re.compile(r"[^n](\\n)[^\\]")
-        return p.sub(' ', output)
+        return output
 
     def is_valid(self):
         """

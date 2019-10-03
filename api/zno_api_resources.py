@@ -27,7 +27,7 @@ class AnswersResource():
         """Submit answer for given question_id. Verify answer and return result."""
         # TODO: verify input, maybe via swagger
         choices = req.media.get('choices', [])
-        question = QuestionsService.load_question_by_id(question_id)
+        question = QuestionsService.load_question_by_id(int(question_id))
         resp.media = {"is_correct": QuestionsService.check_answers(question, choices),
                       "choices": question['choices'],
                       "explanation": question.get('explanation')}
