@@ -1,14 +1,15 @@
 import falcon
-import rollbar
 import sentry_sdk
 
 import logger
 
+from sentry_sdk.integrations.falcon import FalconIntegration
+
 from zno_api_resources import QuestionsResource, AnswersResource
 
 
-rollbar.init('08d5e546f6874ba08d066c0aaf357fce')
-sentry_sdk.init("https://068e491992e74a3dbd3a5ac0d0b0039c@sentry.io/1769079")
+sentry_sdk.init(dsn="https://068e491992e74a3dbd3a5ac0d0b0039c@sentry.io/1769079",
+                integrations=[FalconIntegration()])
 
 
 def handle_404(req, resp):
