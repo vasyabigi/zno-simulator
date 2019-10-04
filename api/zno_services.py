@@ -16,7 +16,7 @@ class QuestionsService:
     @staticmethod
     def load_questions():
         if not IS_FETCH_REQUIRED:
-            with open("../questions.json", "r") as f:
+            with open("questions.json", "r") as f:
                 return json.loads(f.read())
 
         response = requests.get(QUESTIONS_URL)
