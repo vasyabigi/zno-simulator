@@ -1,6 +1,10 @@
 import falcon
 
+import logger
 from zno_services import QuestionsService
+
+
+log = logger.getLogger('zno_api')
 
 
 class QuestionsResource():
@@ -10,13 +14,12 @@ class QuestionsResource():
     def on_get(self, req, resp):
         """Return question by given question_id. Return random question if question_id = 0."""
         question = QuestionsService.load_random_question()
-        filtered_question = {'id': question['id'],
-                             'content': question['content'],
-                             'choices': [{'id': choice['id'], 'content': choice['content']}
-                                         for choice in question['choices']],
-                             }
-        resp.media = filtered_question
+        resp.media = {'id': question['id'],
+                      'content': question['content'],
+                      'choices': [{'id': choice['id'], 'content': choice['content']}
+                                  for choice in question['choices']]}
         resp.status = falcon.HTTP_200
+        log.debug('Loaded question, id: %s', resp.media['id'])
 
 
 class AnswersResource():
@@ -28,7 +31,8 @@ class AnswersResource():
         # TODO: verify input, maybe via swagger
         choices = req.media.get('choices', [])
         question = QuestionsService.load_question_by_id(int(question_id))
-        resp.media = {"is_correct": QuestionsService.check_answers(question, choices),
-                      "choices": question['choices'],
-                      "explanation": question.get('explanation')}
+        resp.media = {'is_correct': QuestionsService.check_answers(question, choices),
+                      'choices': question['choices'],
+                      'explanation': question.get('explanation')}
         resp.status = falcon.HTTP_200
+        log.debug('Submitted answer, questionid: %s', question_id)
