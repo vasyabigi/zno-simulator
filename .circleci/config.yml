@@ -25,8 +25,5 @@ jobs:
           name: run tests
           command: |
             . venv/bin/activate
-            flake8 . --count --select=E901,E999,F821,F822,F823 --show-source --statistics --output-file test-reports
-            flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --output-file test-reports
-      - store_artifacts:
-          path: test-reports
-          destination: test-reports
+            flake8 . --exclude venv --count --select=E901,E999,F821,F822,F823 --show-source --statistics
+            flake8 . --exclude venv --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
