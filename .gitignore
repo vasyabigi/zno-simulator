@@ -1,0 +1,13 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Editors
+.vscode
+
+# Elastic Beanstalk Files
+.elasticbeanstalk
+
+questions.json
+raw_questions.json

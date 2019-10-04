@@ -1,0 +1,4 @@
+-r api/requirements.txt
+-r bot/requirements.txt
+-r content/requirements.txt
+flake8==3.7.8
