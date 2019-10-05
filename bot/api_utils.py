@@ -15,6 +15,8 @@ CHECK_MARK_BUTTON = "✅"
 CHECK_MARK_BLACK = "✔"
 CROSS_MARK = "❌"
 CROSS_MARK_BLACK = "✖"
+QUESTION_MARK = '❓'
+book = '📖'
 
 
 def get_random_question():

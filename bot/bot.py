@@ -1,7 +1,7 @@
 import json
 import logging
 
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, ChatAction
 from telegram.ext import (
     Updater,
     CommandHandler,
@@ -21,11 +21,31 @@ HELP_STR = "Напишіть /get щоб отримати питання."
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+from functools import wraps
 
+
+def send_typing_action(func):
+    """Sends typing action while processing func command."""
+
+    @wraps(func)
+    def command_func(update, context, *args, **kwargs):
+        context.bot.send_chat_action(
+            chat_id=update.effective_message.chat_id,
+            action=ChatAction.TYPING
+        )
+        return func(update, context, *args, **kwargs)
+
+    return command_func
+
+
+@send_typing_action
 def handle_start(update, context):
     """Displaying the starting message when bot starts."""
     reply_keyboard = [["/get"]]
-    markup = ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True)
+    markup = ReplyKeyboardMarkup(
+        reply_keyboard,
+        resize_keyboard=True
+    )
     context.bot.send_message(
         chat_id=update.message.chat_id,
         text=GREETING_STR,
@@ -33,6 +53,7 @@ def handle_start(update, context):
     )
 
 
+@send_typing_action
 def handle_get(update, context):
     """Send user a question and answers options keyboard."""
     context.user_data.clear()
@@ -114,6 +135,8 @@ def main():
     updater.dispatcher.add_handler(CommandHandler("start", handle_start))
     updater.dispatcher.add_handler(CommandHandler("get", handle_get))
     updater.dispatcher.add_handler(CommandHandler("help", handle_help))
+    updater.dispatcher.add_handler(MessageHandler(Filters.regex("^(хелп)$"), handle_help))
+    # updater.dispatcher.add_handler(RegexHandler("^(хелп)$", handle_help))
     updater.dispatcher.add_handler(CallbackQueryHandler(handle_button))
     updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_start))
     updater.dispatcher.add_error_handler(error)
