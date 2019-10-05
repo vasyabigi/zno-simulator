@@ -1,3 +1,4 @@
+import json
 import falcon
 import sentry_sdk
 
@@ -18,9 +19,16 @@ def handle_404(req, resp):
     resp.body = 'Not found'
 
 
+class HealthCheckResource:
+    def on_get(self, request, response):
+        body = {'data': {'status': 'ok'}}
+        response.body = json.dumps(body)
+
+
 application = falcon.API()
 application.add_route('/questions/random', QuestionsResource())
 application.add_route('/questions/{question_id}/answers', AnswersResource())
+application.add_route('/healthcheck', HealthCheckResource())
 application.add_sink(handle_404, '')
 
 log = logger.getLogger('root')
