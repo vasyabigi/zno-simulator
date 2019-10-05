@@ -35,4 +35,4 @@ class AnswersResource():
                       'choices': question['choices'],
                       'explanation': question.get('explanation')}
         resp.status = falcon.HTTP_200
-        log.debug('Submitted answer, questionid: %s', question_id)
+        log.debug('Submitted answer, question id: %s', question_id)
