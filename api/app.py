@@ -2,10 +2,9 @@ import json
 import falcon
 import sentry_sdk
 
-import logger
-
 from sentry_sdk.integrations.falcon import FalconIntegration
 
+import logger
 from zno_api_resources import QuestionsResource, AnswersResource
 
 
