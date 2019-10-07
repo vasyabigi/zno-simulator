@@ -53,20 +53,19 @@ class TelegramQuestion:
         self.question = json.loads(question_data)
         self.q_id = self.question['id']
         self.choices = self.question["choices"]
-        self.choices_letters = [
-            f"   {choice['content'].split(':')[0]}   "
+
+    @property
+    def choices_letters(self):
+        return [
+            f"{choice['content'].split(':')[0].strip('*')}"
             for choice in self.choices
         ]
 
-    @property
-    def question_str(self):
+    def get_string(self):
         choices_str = "\n".join(
             f"- {choice['content']}" for choice in self.choices
         )
-        return QUESTION_MARK + self.question["content"] + "\n\n" + choices_str
-
-    def choice_json(self, choice):
-        return json.dumps({"c_id": choice["id"], "q_id": self.q_id})
+        return QUESTION_MARK + self.question["content"] + "\n\n*Варіанти відповідей:*\n" + choices_str
 
 
 class TelegramAnswer:
@@ -75,18 +74,16 @@ class TelegramAnswer:
     def __init__(self, answer_data):
         self.answer = json.loads(answer_data)
 
-    def explanation(self, query):
-        marked_answer = query.message.text_markdown
-        explanation_str = (
-            self.answer["explanation"]
-            if self.answer["explanation"] != "None"
-            else "ъуъ!"
-        )
-        return f"{marked_answer}\n\n{INDEX_POINTING_UP} {explanation_str}"
+    def has_explanation(self):
+        # TBD: Remove None from parsed content
+        return self.answer["explanation"] and self.answer["explanation"] != "None"
 
-    def marked_question_str(self, query, callback_data):
+    def explanation(self, text_markdown):
+        return f"{text_markdown}\n\n{INDEX_POINTING_UP} {self.answer['explanation']}"
+
+    def get_verified_question(self, message_text, selected_choice_id):
         # FIXME: investigate better way to separate question and choices
-        question = "\n\n".join(query.message.text.split("\n\n")[0:-1])
+        question = message_text.split("Варіанти відповідей:")[0]
         choices_string = "\n".join(
             f"{self.get_black_mark(choice)} {choice['content']}"
             for choice in self.answer["choices"]
@@ -94,10 +91,10 @@ class TelegramAnswer:
         [selected_choice] = [
             choice["content"]
             for choice in self.answer["choices"]
-            if choice["id"] == callback_data["c_id"]
+            if choice["id"] == selected_choice_id
         ]
         return (
-            f"{question}\n\n{choices_string}\n\n{self.get_mark(self.answer)} "
+            f"{question}*Варіанти відповідей:*\n{choices_string}\n\n{self.get_mark(self.answer)} "
             f"*Ви обрали:* {selected_choice}"
         )
 
