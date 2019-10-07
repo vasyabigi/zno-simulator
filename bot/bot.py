@@ -20,36 +20,23 @@ from telegram.parsemode import ParseMode
 import config
 from api_utils import get_random_question, post_answer
 
+START = "старт"
 EXPLANATION_STR = "📖 Пояснення"
-QUESTION_STR = "питання"
+QUESTION = "питання"
 QUESTION_BOOKS = '📚'
-GREETING_STR = f"Привіт! Напишіть *{QUESTION_STR}* щоб отримати нове питання!"
-HELP_STR = f"Напишіть *{QUESTION_STR}* щоб отримати нове питання."
+GREETING_STR = f"Привіт! Напишіть *{QUESTION}* щоб отримати нове питання!"
+HELP = f"Напишіть *{QUESTION}* щоб отримати нове питання."
+FACEPALM = '🤦'
+SORRY_ERROR = f"{FACEPALM} Виникла помилка... Спробуйте ще раз, ми вже прикладаємо подорожник."
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def send_typing_action(func):
-    """Sends typing action while processing func command."""
-
-    @wraps(func)
-    def command_func(update, context, *args, **kwargs):
-        context.bot.send_chat_action(
-            chat_id=update.effective_message.chat_id,
-            action=ChatAction.TYPING
-        )
-        return func(update, context, *args, **kwargs)
-
-    return command_func
-
-
-@send_typing_action
 def handle_start(update, context):
     """Displaying the starting message when bot starts."""
-    reply_keyboard = [[f'{QUESTION_BOOKS} {QUESTION_STR}']]
     markup = ReplyKeyboardMarkup(
-        reply_keyboard,
+        keyboard=[[f'{QUESTION_BOOKS} {QUESTION}']],
         resize_keyboard=True
     )
     context.bot.send_message(
@@ -60,26 +47,25 @@ def handle_start(update, context):
     )
 
 
-@send_typing_action
 def handle_get(update, context):
     """Send user a question and answers options keyboard."""
-    question = get_random_question()
-    keyboard = [
-        [
-            InlineKeyboardButton(
-                letter,
-                callback_data=json.dumps({
-                    "a": "ans",
-                    "c_id": choice["id"],  # choice id
-                    "q_id": question.q_id,  # question id
-                }),
-                parse_mode=ParseMode.MARKDOWN,
-            )
-            for letter, choice in zip(question.choices_letters, question.choices)
-        ]
-    ]
+    context.user_data.clear()
 
-    reply_markup = InlineKeyboardMarkup(keyboard)
+    question = get_random_question()
+    context.user_data['q_id'] = question.q_id
+
+    reply_markup = InlineKeyboardMarkup.from_row(
+        InlineKeyboardButton(
+            letter,
+            callback_data=json.dumps({
+                "a": "ans",
+                "c_id": choice["id"],  # choice id
+                "q_id": question.q_id,  # question id
+            }),
+            parse_mode=ParseMode.MARKDOWN,
+        )
+        for letter, choice in zip(question.choices_letters, question.choices)
+    )
     update.message.reply_text(
         question.get_string(),
         reply_markup=reply_markup,
@@ -114,17 +100,13 @@ def apply_choice_click(update):
 
     reply_markup = None
     if answer.has_explanation():
-        keyboard = [
-            [
-                InlineKeyboardButton(
+        reply_markup = InlineKeyboardMarkup.from_button(
+            InlineKeyboardButton(
                     EXPLANATION_STR,
                     callback_data=json.dumps(callback_data),
                     parse_mode=ParseMode.MARKDOWN,
-                )
-            ]
-        ]
-
-        reply_markup = InlineKeyboardMarkup(keyboard)
+            )
+        )
 
     query.edit_message_text(
         text=answer.get_verified_question(query.message.text, callback_data["c_id"]),
@@ -153,7 +135,7 @@ def handle_button(update, context):
 def handle_help(update, context):
     """Show short help message with list of available commands."""
     update.message.reply_text(
-        HELP_STR,
+        HELP,
         parse_mode=ParseMode.MARKDOWN
     )
 
@@ -161,6 +143,10 @@ def handle_help(update, context):
 def error(update, context):
     """Log Errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, context.error)
+    update.message.reply_text(
+        SORRY_ERROR,
+        parse_mode=ParseMode.MARKDOWN
+    )
 
 
 def main():
@@ -168,17 +154,17 @@ def main():
     updater = Updater(config.telegram_token, use_context=True)
 
     updater.dispatcher.add_handler(CommandHandler("start", handle_start))
-    updater.dispatcher.add_handler(MessageHandler(Filters.regex("^(старт)$"), handle_start))
+    updater.dispatcher.add_handler(MessageHandler(Filters.regex(f"^({START})$"), handle_start))
 
     updater.dispatcher.add_handler(CommandHandler("get", handle_get))
-    updater.dispatcher.add_handler(MessageHandler(Filters.regex("^(?i).+(питання)?.+$"), handle_get))
+    updater.dispatcher.add_handler(MessageHandler(Filters.regex(f"^(?i).+({QUESTION})?.+$"), handle_get))
 
     updater.dispatcher.add_handler(CommandHandler("help", handle_help))
-    updater.dispatcher.add_handler(MessageHandler(Filters.regex("^(допомога)$"), handle_help))
+    updater.dispatcher.add_handler(MessageHandler(Filters.regex(f"^({HELP})$"), handle_help))
     updater.dispatcher.add_handler(CallbackQueryHandler(handle_button))
 
     updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_start))
-    # updater.dispatcher.add_error_handler(error)
+    updater.dispatcher.add_error_handler(error)
 
     # Start the Bot
     updater.start_polling()

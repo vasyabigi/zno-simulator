@@ -17,7 +17,7 @@ CROSS_MARK = "❌"
 CROSS_MARK_BLACK = "✖"
 QUESTION_MARK = '❓'
 BOOK = '📖'
-INDEX_POINTING_UP = '👉'
+INDEX_POINTING_RIGHT = '👉'
 
 
 def get_random_question():
@@ -65,7 +65,8 @@ class TelegramQuestion:
         choices_str = "\n".join(
             f"- {choice['content']}" for choice in self.choices
         )
-        return QUESTION_MARK + self.question["content"] + "\n\n*Варіанти відповідей:*\n" + choices_str
+        return QUESTION_MARK + self.question["content"] \
+            + "\n\n*Варіанти відповідей:*\n" + choices_str
 
 
 class TelegramAnswer:
@@ -79,7 +80,7 @@ class TelegramAnswer:
         return self.answer["explanation"] and self.answer["explanation"] != "None"
 
     def explanation(self, text_markdown):
-        return f"{text_markdown}\n\n{INDEX_POINTING_UP} {self.answer['explanation']}"
+        return f"{text_markdown}\n\n{INDEX_POINTING_RIGHT} {self.answer['explanation']}"
 
     def get_verified_question(self, message_text, selected_choice_id):
         # FIXME: investigate better way to separate question and choices
