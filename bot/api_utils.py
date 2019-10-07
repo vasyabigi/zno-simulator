@@ -16,7 +16,9 @@ CHECK_MARK_BLACK = "✔"
 CROSS_MARK = "❌"
 CROSS_MARK_BLACK = "✖"
 QUESTION_MARK = '❓'
-book = '📖'
+BOOK = '📖'
+# INDEX_POINTING_UP = '☝'
+INDEX_POINTING_UP = '👉'
 
 
 def get_random_question():
@@ -50,6 +52,7 @@ class TelegramQuestion:
 
     def __init__(self, question_data):
         self.question = json.loads(question_data)
+        self.q_id = self.question['id']
         self.choices = self.question["choices"]
         self.choices_letters = [
             f"   {choice['content'].split(':')[0]}   "
@@ -61,10 +64,10 @@ class TelegramQuestion:
         choices_str = "\n".join(
             f"- {choice['content']}" for choice in self.choices
         )
-        return self.question["content"] + "\n\n" + choices_str
+        return QUESTION_MARK + self.question["content"] + "\n\n" + choices_str
 
     def choice_json(self, choice):
-        return json.dumps({"c_id": choice["id"], "q_id": self.question["id"]})
+        return json.dumps({"c_id": choice["id"], "q_id": self.q_id})
 
 
 class TelegramAnswer:
@@ -80,7 +83,7 @@ class TelegramAnswer:
             if self.answer["explanation"] != "None"
             else "ъуъ!"
         )
-        return f"{marked_answer}\n\n{explanation_str}"
+        return f"{marked_answer}\n\n{INDEX_POINTING_UP} {explanation_str}"
 
     def marked_question_str(self, query, callback_data):
         # FIXME: investigate better way to separate question and choices
