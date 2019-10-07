@@ -10,6 +10,11 @@ QUESTIONS_URL = (
 )
 
 
+class QuestionNotFoundError(Exception):
+    """Custom exception should be raised when question with given id is not found."""
+    pass
+
+
 class QuestionsService:
     """Class designed for questions manipulations: load, check answers, etc."""
 
@@ -30,7 +35,10 @@ class QuestionsService:
 
     @staticmethod
     def load_question_by_id(q_id):
-        return QUESTIONS_MAP[q_id]
+        try:
+            return QUESTIONS_MAP[int(q_id)]
+        except KeyError:
+            raise QuestionNotFoundError
 
     @staticmethod
     def check_answers(question, user_choices):
