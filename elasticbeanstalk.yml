@@ -1,0 +1,6 @@
+global:
+  application_name: zno
+  default_platform: Python 3.6
+  default_region: eu-central-1
+  sc: git
+  workspace_type: Application
