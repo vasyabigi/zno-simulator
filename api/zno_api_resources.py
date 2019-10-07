@@ -11,9 +11,10 @@ class QuestionsResource():
 
     """Get questions via QuestionsService"""
 
-    def on_get(self, req, resp):
-        """Return question by given question_id. Return random question if question_id = 0."""
-        question = QuestionsService.load_random_question()
+    def on_get(self, req, resp, question_id):
+        """Return question by given question_id. Return random question if question_id = random."""
+        question = QuestionsService.load_random_question() if question_id == 'random' \
+            else QuestionsService.load_question_by_id(int(question_id))
         resp.media = {'id': question['id'],
                       'content': question['content'],
                       'choices': [{'id': choice['id'], 'content': choice['content']}
