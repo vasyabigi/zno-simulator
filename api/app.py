@@ -28,7 +28,7 @@ class HealthCheckResource:
 application = falcon.API()
 application.add_route('/questions/{question_id}', QuestionsResource())
 application.add_route('/questions/{question_id}/answers', AnswersResource())
-application.add_route('/healthcheck', HealthCheckResource())
+application.add_route('/', HealthCheckResource())
 application.add_sink(handle_404, '')
 
 log = logger.getLogger('root')
