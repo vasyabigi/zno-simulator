@@ -2,8 +2,12 @@ import json
 import logging
 from functools import wraps
 
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, \
+from telegram import (
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    ReplyKeyboardMarkup,
     ChatAction
+)
 from telegram.ext import (
     Updater,
     CommandHandler,
@@ -95,13 +99,7 @@ def get_explanation(query, answer, message_id):
 def handle_button(update, context):
     """Handle button click."""
     query = update.callback_query
-
-    text = update.message.text
-    choices_dict = {'А': 0, 'Б': 1, 'В': 2, 'Г': 3, 'Д': 4}
-    if text and text.upper() in choices_dict.keys():
-        callback_data = {'q_id': context.user_data['q_id'], 'c_id': choices_dict[text.upper()]}
-    else:
-        callback_data = json.loads(query.data)
+    callback_data = json.loads(query.data)
 
     answer = post_answer(callback_data["q_id"], callback_data["c_id"])
 
@@ -124,19 +122,11 @@ def handle_button(update, context):
 
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    context.bot.edit_message_text(
+    query.edit_message_text(
         text=answer.marked_question_str(query, callback_data),
-        chat_id=update.message.chat_id,
-        message_id=update.message_id-1,
         reply_markup=reply_markup,
-        parse_mode=ParseMode.MARKDOWN
+        parse_mode=ParseMode.MARKDOWN,
     )
-    #
-    # query.edit_message_text(
-    #     text=answer.marked_question_str(query, callback_data),
-    #     reply_markup=reply_markup,
-    #     parse_mode=ParseMode.MARKDOWN,
-    # )
 
 
 def handle_help(update, context):
@@ -150,8 +140,6 @@ def handle_help(update, context):
 def error(update, context):
     """Log Errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, context.error)
-    if context.error:
-        pass
 
 
 def main():
@@ -160,12 +148,12 @@ def main():
 
     updater.dispatcher.add_handler(CommandHandler("start", handle_start))
     updater.dispatcher.add_handler(MessageHandler(Filters.regex("^(старт)$"), handle_start))
-    updater.dispatcher.add_handler(MessageHandler(Filters.regex("^(?i).+(hello)?.+$"), handle_get))
+
     updater.dispatcher.add_handler(CommandHandler("get", handle_get))
+    updater.dispatcher.add_handler(MessageHandler(Filters.regex("^(?i).+(питання)?.+$"), handle_get))
+
     updater.dispatcher.add_handler(CommandHandler("help", handle_help))
-    updater.dispatcher.add_handler(MessageHandler(Filters.regex("^(хелп)$"), handle_help))
-    # updater.dispatcher.add_handler(MessageHandler(Filters.regex("^(?i)(А|Б|В|Г|Д)?\W+$"), handle_button))
-    updater.dispatcher.add_handler(MessageHandler(Filters.regex("^(?i)(А)$"), handle_button))
+    updater.dispatcher.add_handler(MessageHandler(Filters.regex("^(допомога)$"), handle_help))
     updater.dispatcher.add_handler(CallbackQueryHandler(handle_button))
 
     updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_start))
