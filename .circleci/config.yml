@@ -32,6 +32,7 @@ jobs:
   deploy:
     docker:
       - image: circleci/python:3.7.4
+    working_directory: ~/repo
     steps:
       - checkout
       - restore_cache:
