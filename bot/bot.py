@@ -1,7 +1,11 @@
 import json
 import logging
 
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup
+from telegram import (
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    ReplyKeyboardMarkup
+)
 from telegram.ext import (
     Updater,
     CommandHandler,
@@ -14,9 +18,14 @@ from telegram.parsemode import ParseMode
 import config
 from api_utils import get_random_question, post_answer
 
-EXPLANATION_STR = "Пояснення"
-GREETING_STR = "Привіт! Напишіть /get щоб отримати питання!"
-HELP_STR = "Напишіть /get щоб отримати питання."
+START = "старт"
+EXPLANATION_STR = "📖 Пояснення"
+QUESTION = "питання"
+QUESTION_BOOKS = '📚'
+GREETING_STR = f"Привіт! Напишіть *{QUESTION}* щоб отримати нове питання!"
+HELP = f"Напишіть *{QUESTION}* щоб отримати нове питання."
+FACEPALM = '🤦'
+SORRY_ERROR = f"{FACEPALM} Виникла помилка... Спробуйте ще раз, ми вже прикладаємо подорожник."
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -24,12 +33,15 @@ logger = logging.getLogger(__name__)
 
 def handle_start(update, context):
     """Displaying the starting message when bot starts."""
-    reply_keyboard = [["/get"]]
-    markup = ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True)
+    markup = ReplyKeyboardMarkup(
+        keyboard=[[f'{QUESTION_BOOKS} {QUESTION}']],
+        resize_keyboard=True
+    )
     context.bot.send_message(
         chat_id=update.message.chat_id,
         text=GREETING_STR,
-        reply_markup=markup
+        reply_markup=markup,
+        parse_mode=ParseMode.MARKDOWN
     )
 
 
@@ -38,73 +50,102 @@ def handle_get(update, context):
     context.user_data.clear()
 
     question = get_random_question()
-    keyboard = [
-        [
-            InlineKeyboardButton(
-                letter,
-                callback_data=question.choice_json(choice),
-                parse_mode=ParseMode.MARKDOWN,
-            )
-            for letter, choice in zip(question.choices_letters, question.choices)
-        ]
-    ]
+    context.user_data['q_id'] = question.q_id
 
-    reply_markup = InlineKeyboardMarkup(keyboard)
+    reply_markup = InlineKeyboardMarkup.from_row(
+        InlineKeyboardButton(
+            letter,
+            callback_data=json.dumps({
+                "a": "ans",
+                "c_id": choice["id"],  # choice id
+                "q_id": question.q_id,  # question id
+            }),
+            parse_mode=ParseMode.MARKDOWN,
+        )
+        for letter, choice in zip(question.choices_letters, question.choices)
+    )
     update.message.reply_text(
-        question.question_str,
+        question.get_string(),
         reply_markup=reply_markup,
         parse_mode=ParseMode.MARKDOWN,
     )
 
 
-def get_explanation(query, answer):
+def apply_explanation_click(update):
     """Handle 'explain' button click."""
-    query.edit_message_text(
-        text=answer.explanation(query),
+    callback_data = json.loads(update.callback_query.data)
+    answer = post_answer(callback_data["q_id"], callback_data["c_id"])
+
+    query = update.callback_query
+    query.bot.edit_message_text(
+        text=answer.explanation(query.message.text_markdown),
+        chat_id=query.message.chat_id,
+        message_id=callback_data["m_id"],
         parse_mode=ParseMode.MARKDOWN
     )
 
 
-def handle_button(update, context):
-    """Handle button click."""
-    query = update.callback_query
-    callback_data = json.loads(query.data)
-
-    # checking if we have 'explain' button hit
-    if context.user_data.get("answer"):
-        get_explanation(query, context.user_data.pop("answer"))
-        return
-
+def apply_choice_click(update):
+    callback_data = json.loads(update.callback_query.data)
     answer = post_answer(callback_data["q_id"], callback_data["c_id"])
 
-    context.user_data["answer"] = answer
-    keyboard = [
-        [
-            InlineKeyboardButton(
-                EXPLANATION_STR,
-                callback_data=json.dumps(callback_data),
-                parse_mode=ParseMode.MARKDOWN,
-            )
-        ]
-    ]
+    query = update.callback_query
 
-    reply_markup = InlineKeyboardMarkup(keyboard)
+    callback_data.update({
+        'a': 'exp',
+        'm_id': update.effective_message.message_id
+    })
+
+    reply_markup = None
+    if answer.has_explanation():
+        reply_markup = InlineKeyboardMarkup.from_button(
+            InlineKeyboardButton(
+                    EXPLANATION_STR,
+                    callback_data=json.dumps(callback_data),
+                    parse_mode=ParseMode.MARKDOWN,
+            )
+        )
 
     query.edit_message_text(
-        text=answer.marked_question_str(query, callback_data),
+        text=answer.get_verified_question(query.message.text, callback_data["c_id"]),
         reply_markup=reply_markup,
         parse_mode=ParseMode.MARKDOWN,
     )
 
 
+SUPPORTED_ACTIONS = {
+    'ans': apply_choice_click,
+    'exp': apply_explanation_click,
+    # TODO:
+    # 'try': apply_try_again,
+}
+
+
+def handle_button(update, context):
+    """Handle button click."""
+    callback_data = json.loads(update.callback_query.data)
+    # Select action:
+    apply_action = SUPPORTED_ACTIONS[callback_data['a']]
+    # Apply action:
+    apply_action(update)
+
+
 def handle_help(update, context):
     """Show short help message with list of available commands."""
-    update.message.reply_text(HELP_STR)
+    update.message.reply_text(
+        HELP,
+        parse_mode=ParseMode.MARKDOWN
+    )
 
 
 def error(update, context):
     """Log Errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, context.error)
+    context.bot.send_message(
+        chat_id=context.effective_chat.id,
+        text=SORRY_ERROR,
+        parse_mode=ParseMode.MARKDOWN
+    )
 
 
 def main():
@@ -112,9 +153,15 @@ def main():
     updater = Updater(config.telegram_token, use_context=True)
 
     updater.dispatcher.add_handler(CommandHandler("start", handle_start))
+    updater.dispatcher.add_handler(MessageHandler(Filters.regex(f"^({START})$"), handle_start))
+
     updater.dispatcher.add_handler(CommandHandler("get", handle_get))
+    updater.dispatcher.add_handler(MessageHandler(Filters.regex(f"^(?i).+({QUESTION})?.+$"), handle_get))
+
     updater.dispatcher.add_handler(CommandHandler("help", handle_help))
+    updater.dispatcher.add_handler(MessageHandler(Filters.regex(f"^({HELP})$"), handle_help))
     updater.dispatcher.add_handler(CallbackQueryHandler(handle_button))
+
     updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_start))
     updater.dispatcher.add_error_handler(error)
 
