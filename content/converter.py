@@ -63,7 +63,7 @@ class QuestionConverter:
 
         """
         soup_txt = cleaner.clean_html(str(soup).replace("\n", ""))
-        html = f'<p>{soup_txt}</p>' if '</p>' not in soup_txt else soup_txt
+        html = f"<p>{soup_txt}</p>" if "</p>" not in soup_txt else soup_txt
         output = tomd.convert(html)
         output = output.strip("\n").strip(" ")
         output = output.replace("<br>", "\n")
@@ -129,8 +129,9 @@ class QuestionConverter:
         )
 
     def get_explanation(self):
-        explanation = self.soup_to_markdown(
-            self.content_post.find("div", attrs={"class": "explanation"})
-        )
+        explanation = self.content_post.find("div", attrs={"class": "explanation"})
 
-        return explanation
+        if not explanation:
+            return ""
+
+        return self.soup_to_markdown(explanation)
