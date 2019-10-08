@@ -23,7 +23,7 @@ class QuestionsResource():
             resp.status = falcon.HTTP_404
 
         else:
-            resp.media = {'id': question['id'],
+            resp.media = {'id': question['_id'],
                           'content': question['content'],
                           'choices': [{'id': choice['id'], 'content': choice['content']}
                                       for choice in question['choices']]}

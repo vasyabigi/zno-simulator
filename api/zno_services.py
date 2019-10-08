@@ -2,12 +2,8 @@ import os
 import json
 import random
 
+import pymongo
 import requests
-
-IS_FETCH_REQUIRED = os.environ.get("IS_FETCH_REQUIRED", False)
-QUESTIONS_URL = (
-    "https://much-better-adventures.s3.eu-central-1.amazonaws.com/questions.json"
-)
 
 
 class QuestionNotFoundError(Exception):
@@ -19,25 +15,22 @@ class QuestionsService:
     """Class designed for questions manipulations: load, check answers, etc."""
 
     @staticmethod
-    def load_questions():
-        if not IS_FETCH_REQUIRED:
-            with open("questions.json", "r") as f:
-                return json.loads(f.read())
-
-        response = requests.get(QUESTIONS_URL)
-        return json.loads(response.content)
-
-    @staticmethod
     def load_random_question():
-        question_id = random.choice(QUESTIONS)
-        question_data = QUESTIONS_MAP[question_id]
-        return question_data
+        client = pymongo.MongoClient('mongodb://localhost:27017/')
+        db = client['zno_questions']
+        # TODO: receive subject argument and use it instead of hardcode
+        collection = db['ua_lang_and_literature']
+        return collection.aggregate([{ '$sample': { 'size': 1 } }]).next()
 
     @staticmethod
     def load_question_by_id(q_id):
+        client = pymongo.MongoClient('mongodb://localhost:27017/')
+        db = client['zno_questions']
+        # TODO: receive subject argument and use it instead of hardcode
+        collection = db['ua_lang_and_literature']
         try:
-            return QUESTIONS_MAP[int(q_id)]
-        except KeyError:
+            return collection.find({ '_id': int(q_id)}).next()
+        except StopIteration:
             raise QuestionNotFoundError
 
     @staticmethod
@@ -46,8 +39,3 @@ class QuestionsService:
             choice["id"] for choice in question["choices"] if choice["is_correct"]
         ]
         return sorted(correct_choices) == sorted(user_choices)
-
-
-QUESTIONS_FROM_SERVER = QuestionsService.load_questions()
-QUESTIONS = [q["id"] for q in QUESTIONS_FROM_SERVER]
-QUESTIONS_MAP = {q["id"]: q for q in QUESTIONS_FROM_SERVER}
