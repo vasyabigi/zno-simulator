@@ -16,7 +16,7 @@ from telegram.ext import (
 from telegram.parsemode import ParseMode
 
 import config
-from api_utils import get_random_question, post_answer
+from api_utils import get_question, post_answer
 
 START = "старт"
 EXPLANATION_STR = "📖 Пояснення"
@@ -24,7 +24,7 @@ QUESTION = "питання"
 QUESTION_BOOKS = '📚'
 GREETING_STR = f"Привіт! Напишіть *{QUESTION}* щоб отримати нове питання!"
 HELP = f"Напишіть *{QUESTION}* щоб отримати нове питання."
-FACEPALM = '🤦'
+FACEPALM = '🤦‍♂️'
 SORRY_ERROR = f"{FACEPALM} Виникла помилка... Спробуйте ще раз, ми вже прикладаємо подорожник."
 
 logging.basicConfig(level=logging.INFO)
@@ -49,14 +49,14 @@ def handle_get(update, context):
     """Send user a question and answers options keyboard."""
     context.user_data.clear()
 
-    question = get_random_question()
+    question = get_question()
     context.user_data['q_id'] = question.q_id
 
     reply_markup = InlineKeyboardMarkup.from_row(
         InlineKeyboardButton(
             letter,
             callback_data=json.dumps({
-                "a": "ans",
+                "a": "try",
                 "c_id": choice["id"],  # choice id
                 "q_id": question.q_id,  # question id
             }),
@@ -100,9 +100,9 @@ def apply_choice_click(update):
     if answer.has_explanation():
         reply_markup = InlineKeyboardMarkup.from_button(
             InlineKeyboardButton(
-                    EXPLANATION_STR,
-                    callback_data=json.dumps(callback_data),
-                    parse_mode=ParseMode.MARKDOWN,
+                EXPLANATION_STR,
+                callback_data=json.dumps(callback_data),
+                parse_mode=ParseMode.MARKDOWN,
             )
         )
 
@@ -113,11 +113,77 @@ def apply_choice_click(update):
     )
 
 
+def apply_first_try(update):
+    callback_data = json.loads(update.callback_query.data)
+    answer = post_answer(callback_data["q_id"], callback_data["c_id"])
+
+    query = update.callback_query
+    if answer.is_correct:
+
+        callback_data.update({
+            'a': 'exp',
+            'm_id': update.effective_message.message_id
+        })
+
+        reply_markup = None
+        if answer.has_explanation():
+            reply_markup = InlineKeyboardMarkup.from_button(
+                InlineKeyboardButton(
+                    EXPLANATION_STR,
+                    callback_data=json.dumps(callback_data),
+                    parse_mode=ParseMode.MARKDOWN,
+                )
+            )
+        query.edit_message_text(
+            text=answer.get_verified_question(query.message.text, callback_data["c_id"]),
+            reply_markup=reply_markup,
+            parse_mode=ParseMode.MARKDOWN,
+        )
+
+    else:
+        question = get_question(question_id=callback_data['q_id'])
+        callback_data.update({
+            'a': 'ans',
+            'm_id': update.effective_message.message_id
+        })
+        keyboard = [
+            [
+                InlineKeyboardButton(
+                    letter,
+                    callback_data=json.dumps({
+                        "a": "ans",
+                        "c_id": choice["id"],  # choice id
+                        "q_id": question.q_id,  # question id
+                    }),
+                    parse_mode=ParseMode.MARKDOWN,
+                )
+                for letter, choice in zip(question.choices_letters, question.choices)
+            ],
+            [
+                InlineKeyboardButton(
+                    'show answer',
+                    callback_data=json.dumps(callback_data),
+                    parse_mode=ParseMode.MARKDOWN,
+                )
+            ],
+
+        ]
+
+        reply_markup = InlineKeyboardMarkup(
+            keyboard
+        )
+        query.edit_message_text(
+            text=answer.get_selected_choice(query.message.text, callback_data["c_id"]),
+            reply_markup=reply_markup,
+            parse_mode=ParseMode.MARKDOWN,
+        )
+
+
 SUPPORTED_ACTIONS = {
     'ans': apply_choice_click,
     'exp': apply_explanation_click,
     # TODO:
-    # 'try': apply_try_again,
+    'try': apply_first_try,
 }
 
 
@@ -141,8 +207,10 @@ def handle_help(update, context):
 def error(update, context):
     """Log Errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, context.error)
+    chat_id = context.effective_chat.id if hasattr(context, 'effective_chat') \
+        else update.effective_chat.id
     context.bot.send_message(
-        chat_id=context.effective_chat.id,
+        chat_id=chat_id,
         text=SORRY_ERROR,
         parse_mode=ParseMode.MARKDOWN
     )
@@ -156,7 +224,9 @@ def main():
     updater.dispatcher.add_handler(MessageHandler(Filters.regex(f"^({START})$"), handle_start))
 
     updater.dispatcher.add_handler(CommandHandler("get", handle_get))
-    updater.dispatcher.add_handler(MessageHandler(Filters.regex(f"^(?i).+({QUESTION})?.+$"), handle_get))
+    #TODO fix regexp
+    updater.dispatcher.add_handler(
+        MessageHandler(Filters.regex(f"^(?i).+({QUESTION})?.+$"), handle_get))
 
     updater.dispatcher.add_handler(CommandHandler("help", handle_help))
     updater.dispatcher.add_handler(MessageHandler(Filters.regex(f"^({HELP})$"), handle_help))

@@ -8,7 +8,7 @@ import config
 
 logger = logging.getLogger(__name__)
 
-QUESTION_URL = urljoin(config.api_root, "/questions/random")
+QUESTION_URL = urljoin(config.api_root, "/questions/{id}")
 ANSWER_URL = urljoin(config.api_root, "/questions/{id}/answers")
 
 CHECK_MARK_BUTTON = "✅"
@@ -20,11 +20,12 @@ BOOK = '📖'
 INDEX_POINTING_RIGHT = '👉'
 
 
-def get_random_question():
+def get_question(question_id=None):
     """Get question from API."""
-    logger.debug(f"Getting question from {QUESTION_URL}")
+    q_id = question_id or 'random'
+    logger.debug(f"Getting question from {QUESTION_URL.format(id=q_id)}")
     # TODO handle server status != 200
-    api_response = requests.get(QUESTION_URL)
+    api_response = requests.get(QUESTION_URL.format(id=q_id))
     logger.debug(
         f"API response {api_response.status_code} received: {api_response.content}"
     )
@@ -82,18 +83,31 @@ class TelegramAnswer:
     def explanation(self, text_markdown):
         return f"{text_markdown}\n\n{INDEX_POINTING_RIGHT} {self.answer['explanation']}"
 
-    def get_verified_question(self, message_text, selected_choice_id):
-        # FIXME: investigate better way to separate question and choices
-        question = message_text.split("Варіанти відповідей:")[0]
-        choices_string = "\n".join(
-            f"{self.get_black_mark(choice)} {choice['content']}"
-            for choice in self.answer["choices"]
+    @property
+    def is_correct(self):
+        return self.answer['is_correct']
+
+    def get_selected_choice(self, message_text, selected_choice_id):
+        selected_choice = self.selected_choice_str(selected_choice_id)
+        return (
+            f"{message_text}\n\n{self.get_mark(self.answer)} *Ви обрали:* {selected_choice}"
         )
+
+    def selected_choice_str(self, selected_choice_id):
         [selected_choice] = [
             choice["content"]
             for choice in self.answer["choices"]
             if choice["id"] == selected_choice_id
         ]
+        return selected_choice
+
+    def get_verified_question(self, message_text, selected_choice_id):
+        question = message_text.split("Варіанти відповідей:")[0]
+        choices_string = "\n".join(
+            f"{self.get_black_mark(choice)} {choice['content']}"
+            for choice in self.answer["choices"]
+        )
+        selected_choice = self.selected_choice_str(selected_choice_id)
         return (
             f"{question}*Варіанти відповідей:*\n{choices_string}\n\n{self.get_mark(self.answer)} "
             f"*Ви обрали:* {selected_choice}"
