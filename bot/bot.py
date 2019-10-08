@@ -224,9 +224,9 @@ def main():
     updater.dispatcher.add_handler(MessageHandler(Filters.regex(f"^({START})$"), handle_start))
 
     updater.dispatcher.add_handler(CommandHandler("get", handle_get))
-    #TODO fix regexp
     updater.dispatcher.add_handler(
-        MessageHandler(Filters.regex(f"^(?i).+({QUESTION})?.+$"), handle_get))
+        MessageHandler(Filters.regex(f"^(?i)(.+)?({QUESTION})(.+)?$"), handle_get)
+    )
 
     updater.dispatcher.add_handler(CommandHandler("help", handle_help))
     updater.dispatcher.add_handler(MessageHandler(Filters.regex(f"^({HELP})$"), handle_help))
