@@ -1,12 +1,10 @@
 import json
 import logging
-from functools import wraps
 
 from telegram import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
-    ReplyKeyboardMarkup,
-    ChatAction
+    ReplyKeyboardMarkup
 )
 from telegram.ext import (
     Updater,
@@ -143,8 +141,9 @@ def handle_help(update, context):
 def error(update, context):
     """Log Errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, context.error)
-    update.message.reply_text(
-        SORRY_ERROR,
+    context.bot.send_message(
+        chat_id=context.effective_chat.id,
+        text=SORRY_ERROR,
         parse_mode=ParseMode.MARKDOWN
     )
 
