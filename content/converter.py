@@ -1,19 +1,19 @@
 import string
 
-import html2text
+import tomd
 import lxml.html.clean as clean
 from bs4 import BeautifulSoup
 
 cleaner = clean.Cleaner(
-    safe_attrs_only=True, safe_attrs=frozenset(), remove_tags=["em"]
+    safe_attrs_only=True, safe_attrs=frozenset(), remove_tags=["em", "a"]
 )
-
-markdown = html2text.HTML2Text()
 
 QUESTION_TYPE_URL_TO_KIND = {
     "/dovidka/viditestiv/1/": "single-choice",
     "/dovidka/viditestiv/5/": "multiple-choice",
 }
+
+MAX_TEXT_LENGTH = 3600
 
 SUPPORTED_QUESTION_TYPES = ("single-choice",)
 
@@ -62,14 +62,11 @@ class QuestionConverter:
         Converts beautiful soup html into the markdown format.
 
         """
-        output = markdown.handle(cleaner.clean_html(str(soup)))
-
-        output = output.strip("\n")
-        # Hacky way to remove new lines but keep paragraphs
-        output = output.replace("\n\n", "TEMP_BREAKER")
-        output = output.replace("\n", " ")
-        output = output.replace("TEMP_BREAKER", "\n\n")
-
+        soup_txt = cleaner.clean_html(str(soup).replace("\n", ""))
+        html = f'<p>{soup_txt}</p>' if '</p>' not in soup_txt else soup_txt
+        output = tomd.convert(html)
+        output = output.strip("\n").strip(" ")
+        output = output.replace("<br>", "\n")
         return output
 
     def is_valid(self):
@@ -78,7 +75,13 @@ class QuestionConverter:
         Currently, we're supporing single-choice questions with limitted length only.
 
         """
-        return self.get_question_kind() in SUPPORTED_QUESTION_TYPES
+        is_supported = self.get_question_kind() in SUPPORTED_QUESTION_TYPES
+        is_too_long = (
+            len(self.get_content()) > MAX_TEXT_LENGTH
+            or len(self.get_explanation()) > MAX_TEXT_LENGTH
+        )
+
+        return is_supported and not is_too_long
 
     def get_question_kind(self):
         links = self.content_get.find_all("a")
@@ -126,6 +129,8 @@ class QuestionConverter:
         )
 
     def get_explanation(self):
-        return self.soup_to_markdown(
+        explanation = self.soup_to_markdown(
             self.content_post.find("div", attrs={"class": "explanation"})
         )
+
+        return explanation
