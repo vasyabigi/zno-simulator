@@ -37,7 +37,7 @@ class QuestionsService:
     def load_question_by_id(q_id):
         try:
             return QUESTIONS_MAP[int(q_id)]
-        except KeyError:
+        except (KeyError, ValueError):
             raise QuestionNotFoundError
 
     @staticmethod
