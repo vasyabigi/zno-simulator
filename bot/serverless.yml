@@ -8,6 +8,7 @@ provider:
   environment:
     TELEGRAM_TOKEN: ${file(./serverless.env.yml):TELEGRAM_TOKEN, ''}
     API_ROOT: ${file(./serverless.env.yml):API_ROOT, ''}
+    SENTRY_DSN: ${file(./serverless.env.yml):SENTRY_DSN, ''}
 
 functions:
   webhook:

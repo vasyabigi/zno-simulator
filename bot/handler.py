@@ -1,15 +1,24 @@
 import json
 import telegram
 import logging
+import config
+
+import sentry_sdk
+from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
 
 from bot import configure_telegram
 
+sentry_sdk.init(
+    dsn=config.sentry_dsn,
+    integrations=[AwsLambdaIntegration()]
+)
 
 # Logging is cool!
 logger = logging.getLogger()
 if logger.handlers:
     for handler in logger.handlers:
         logger.removeHandler(handler)
+
 logging.basicConfig(level=logging.INFO)
 
 OK_RESPONSE = {
@@ -17,12 +26,13 @@ OK_RESPONSE = {
     "headers": {"Content-Type": "application/json"},
     "body": json.dumps("ok"),
 }
-ERROR_RESPONSE = {"statusCode": 400, "body": json.dumps("Oops, something went wrong!")}
+ERROR_RESPONSE = {"statusCode": 500, "body": json.dumps("Oops, something went wrong!")}
 
 
 def webhook(event, context):
     """
     Runs the Telegram webhook.
+
     """
     bot_updater = configure_telegram()
     logger.info("Event: {}".format(event))
@@ -42,7 +52,6 @@ def set_webhook(event, context):
     """
     Sets the Telegram bot webhook.
     """
-
     logger.info("Event: {}".format(event))
     bot_updater = configure_telegram()
     url = "https://{}/{}/".format(
