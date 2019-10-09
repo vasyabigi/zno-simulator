@@ -148,7 +148,7 @@ def error(update, context):
     )
 
 
-def main():
+def configure_telegram():
     # Create the Updater and pass it your bot's token.
     updater = Updater(config.telegram_token, use_context=True)
 
@@ -164,6 +164,11 @@ def main():
 
     updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_start))
     updater.dispatcher.add_error_handler(error)
+    return updater
+
+
+def main():
+    updater = configure_telegram()
 
     # Start the Bot
     updater.start_polling()
