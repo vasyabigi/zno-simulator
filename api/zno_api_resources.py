@@ -25,6 +25,8 @@ class QuestionsResource():
         else:
             resp.media = {'id': question['id'],
                           'content': question['content'],
+                          'image': question['image'],
+                          'explanation': question['explanation'],
                           'choices': [{'id': choice['id'], 'content': choice['content']}
                                       for choice in question['choices']]}
             resp.status = falcon.HTTP_200
