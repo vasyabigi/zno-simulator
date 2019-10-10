@@ -28,8 +28,8 @@ class QuestionsService:
         return json.loads(response.content)
 
     @staticmethod
-    def load_random_question():
-        question_id = random.choice(QUESTIONS)
+    def load_random_question(subject="ukr"):
+        question_id = random.choice(QUESTIONS[subject])
         question_data = QUESTIONS_MAP[question_id]
         return question_data
 
@@ -49,5 +49,15 @@ class QuestionsService:
 
 
 QUESTIONS_FROM_SERVER = QuestionsService.load_questions()
-QUESTIONS = [q["id"] for q in QUESTIONS_FROM_SERVER]
+
+SUBJECT_UKR = "ukr"
+SUBJECT_HIS = "his"
+SUPPORTED_SUBJECTS_CODES = [SUBJECT_UKR, SUBJECT_HIS]
+
+QUESTIONS = {}
+QUESTIONS_MAP = {}
+
+for code in SUPPORTED_SUBJECTS_CODES:
+    QUESTIONS[code] = [q["id"] for q in QUESTIONS_FROM_SERVER if q["subject"] == code]
+
 QUESTIONS_MAP = {q["id"]: q for q in QUESTIONS_FROM_SERVER}

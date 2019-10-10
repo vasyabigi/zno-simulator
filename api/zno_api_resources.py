@@ -1,7 +1,7 @@
 import falcon
 
 import logger
-from zno_services import QuestionsService, QuestionNotFoundError
+from zno_services import QuestionsService, QuestionNotFoundError, SUPPORTED_SUBJECTS_CODES
 
 
 log = logger.getLogger('zno_api')
@@ -13,8 +13,13 @@ class QuestionsResource():
 
     def on_get(self, req, resp, question_id):
         """Return question by given question_id. Return random question if question_id = random."""
+        subject = req.get_param('subject')
+
+        if not subject or subject not in SUPPORTED_SUBJECTS_CODES:
+            raise falcon.HTTPBadRequest("Subject is not supported")
+
         try:
-            question = QuestionsService.load_random_question() if question_id == 'random' \
+            question = QuestionsService.load_random_question(subject=subject) if question_id == 'random' \
                 else QuestionsService.load_question_by_id(question_id)
 
         except QuestionNotFoundError:
