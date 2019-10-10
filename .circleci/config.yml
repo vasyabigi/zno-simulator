@@ -48,20 +48,6 @@ jobs:
             mkdir .elasticbeanstalk
             cp elasticbeanstalk.yml .elasticbeanstalk/config.yml
             eb deploy zno-dev
-  deploy_telegram:
-    docker:
-      - image: circleci/node:9.10.1
-    working_directory: ~/repo
-    steps:
-      - checkout
-      - run:
-          name: Deploy Telegram Bot using Serverless
-          command: |
-            cd bot
-            sudo npm i -g serverless
-            npm install
-            serverless config credentials --provider aws --key $AWS_ACCESS_KEY_ID --secret $AWS_SECRET_ACCESS_KEY
-            serverless deploy
 
 workflows:
   version: 2
@@ -69,13 +55,6 @@ workflows:
     jobs:
       - build
       - deploy:
-          requires:
-            - build
-          context: AWS (Essence)
-          filters:
-            branches:
-              only: master
-      - deploy_telegram:
           requires:
             - build
           context: AWS (Essence)
