@@ -1,0 +1,7 @@
+{
+    "name": "zno-guru",
+    "version": "0.1.0",
+    "dependencies": {
+        "serverless-python-requirements": "^5.0.0"
+    }
+}
