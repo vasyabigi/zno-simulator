@@ -57,8 +57,13 @@ async def parse_subject(session, subject_data):
         tasks.append(parse_exam_questions(session, exam_data, subject_title))
 
     exams_questions = await asyncio.gather(*tasks)
+    subject_questions = list(chain(*exams_questions))
 
-    return list(chain(*exams_questions))
+    # Save questions to local folder
+    with open("raw_questions.json", "w") as f:
+        json.dump(subject_questions, f)
+
+    return subject_questions
 
 
 async def parse_exam_questions(session, exam_data, subject_title):
@@ -106,10 +111,6 @@ async def parse_exam_questions(session, exam_data, subject_title):
         )
 
     print(f"Finished ({time.strftime('%X')}): {exam_title}")
-
-    # Save questions to local folder
-    with open("raw_questions.json", "w") as f:
-        json.dump(questions, f)
 
     return questions
 
