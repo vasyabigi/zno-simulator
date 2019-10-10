@@ -81,7 +81,7 @@ def apply_show_answer_click(update):
 
     query = update.callback_query
     query.bot.edit_message_text(
-        text=answer.get_verified_answer(query.message.text_markdown, callback_data['c_id']),
+        text=answer.get_verified_answer(query.message.text_markdown),
         reply_markup=reply_markup,
         chat_id=query.message.chat_id,
         message_id=callback_data["m_id"],
@@ -93,63 +93,73 @@ def apply_next_try(update):
     callback_data = json.loads(update.callback_query.data)
     answer = post_answer(callback_data["q_id"], callback_data["c_id"])
 
-    query = update.callback_query
-
     if answer.is_correct:
-        logger.info('User {} - {} got correct choice {} for question {}'.format(
-            update._effective_user.id,
-            update._effective_user.name,
-            callback_data["c_id"],
-            callback_data["q_id"]
-        ))
-
-        message_text = answer.get_verified_question(
-            query.message.text_markdown,
-            callback_data["c_id"]
-        )
-        callback_data.update({
-            'a': 'exp',
-            'm_id': update.effective_message.message_id
-        })
-
-        reply_markup = None
-        if answer.has_explanation():
-            reply_markup = InlineKeyboardMarkup.from_button(
-                get_inline_button(EXPLANATION_STR, callback_data)
-            )
+        correct_answer_response(update, callback_data, answer)
 
     else:
-        logger.info('User {} - {} got incorrect choice {} for question {}'.format(
-            update._effective_user.id,
-            update._effective_user.name,
-            callback_data["c_id"],
-            callback_data["q_id"],
-        ))
+        incorrect_answer_response(update, callback_data, answer)
 
-        message_text = answer.get_selected_choice(
-            query.message.text_markdown,
-            callback_data["c_id"]
+
+def correct_answer_response(update, callback_data, answer):
+    query = update.callback_query
+    logger.info('User {} - {} got correct choice {} for question {}'.format(
+        update._effective_user.id,
+        update._effective_user.name,
+        callback_data["c_id"],
+        callback_data["q_id"]
+    ))
+    message_text = answer.get_verified_question(
+        query.message.text_markdown,
+        callback_data["c_id"]
+    )
+    callback_data.update({
+        'a': 'exp',
+        'm_id': update.effective_message.message_id
+    })
+    reply_markup = None
+    if answer.has_explanation():
+        reply_markup = InlineKeyboardMarkup.from_button(
+            get_inline_button(EXPLANATION_STR, callback_data)
         )
-        # avoid redundant update in case of the same wrong choice
-        if message_text == query.message.text_markdown:
-            return
+    update.callback_query.edit_message_text(
+        text=message_text,
+        reply_markup=reply_markup,
+        parse_mode=ParseMode.MARKDOWN,
+    )
 
-        callback_data.update({
-            'a': 'try',
-            'm_id': update.effective_message.message_id
-        })
-        reply_markup = InlineKeyboardMarkup(
+
+def incorrect_answer_response(update, callback_data, answer):
+    query = update.callback_query
+    logger.info('User {} - {} got incorrect choice {} for question {}'.format(
+        update._effective_user.id,
+        update._effective_user.name,
+        callback_data["c_id"],
+        callback_data["q_id"],
+    ))
+
+    message_text = answer.get_selected_choice(
+        query.message.text_markdown,
+        callback_data["c_id"]
+    )
+    # avoid redundant update in case of the same wrong choice
+    if message_text == query.message.text_markdown:
+        return
+
+    callback_data.update({
+        'a': 'try',
+        'm_id': update.effective_message.message_id
+    })
+    reply_markup = InlineKeyboardMarkup(
+        [
+            list(
+                get_choices_buttons(get_question(question_id=callback_data['q_id']))
+            ),
             [
-                list(
-                    get_choices_buttons(get_question(question_id=callback_data['q_id']))
-                ),
-                [
-                    get_inline_button(SHOW_ANSWER, {**callback_data, **{'a': 'ans'}})
-                ],
-            ]
-        )
-
-    query.edit_message_text(
+                get_inline_button(SHOW_ANSWER, {**callback_data, **{'a': 'ans'}})
+            ],
+        ]
+    )
+    update.callback_query.edit_message_text(
         text=message_text,
         reply_markup=reply_markup,
         parse_mode=ParseMode.MARKDOWN,
