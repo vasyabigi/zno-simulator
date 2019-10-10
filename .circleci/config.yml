@@ -25,7 +25,7 @@ jobs:
           command: |
             . venv/bin/activate
             flake8 . --exclude venv --count --select=E901,E999,F821,F822,F823 --show-source --statistics --output-file test-reports
-             flake8 . --exclude venv --count --max-complexity=10 --max-line-length=120 --statistics --output-file test-reports
+            flake8 . --exclude venv --count --max-complexity=10 --max-line-length=120 --statistics --output-file test-reports
       - store_artifacts:
           path: test-reports
           destination: test-reports
@@ -57,6 +57,7 @@ jobs:
       - run:
           name: Deploy Telegram Bot using Serverless
           command: |
+            cd bot
             sudo npm i -g serverless
             npm install
             serverless deploy
