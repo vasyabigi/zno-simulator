@@ -26,9 +26,9 @@ logger = logging.getLogger('zno_bot_ukrainian')
 
 def get_choices_buttons(question):
     return (get_inline_button(letter, {
-        "a": "try",
-        "c_id": choice["id"],  # choice id
-        "q_id": question.q_id,  # question id
+        'a': 'try',
+        'c_id': choice['id'],  # choice id
+        'q_id': question.q_id,  # question id
     })
         for letter, choice in zip(question.choices_letters, question.choices))
 
@@ -44,19 +44,19 @@ def get_inline_button(text, data):
 def apply_explanation_click(update):
     """Handle 'explain' button click."""
     callback_data = json.loads(update.callback_query.data)
-    answer = post_answer(callback_data["q_id"], callback_data["c_id"])
+    answer = post_answer(callback_data['q_id'], callback_data['c_id'])
 
     logger.info('User {} - {} got explanation for question {}'.format(
         update._effective_user.id,
         update._effective_user.name,
-        callback_data["q_id"]
+        callback_data['q_id']
     ))
 
     query = update.callback_query
     query.bot.edit_message_text(
         text=answer.explanation(query.message.text_markdown),
         chat_id=query.message.chat_id,
-        message_id=callback_data["m_id"],
+        message_id=callback_data['m_id'],
         parse_mode=ParseMode.MARKDOWN
     )
 
@@ -69,7 +69,7 @@ def apply_show_answer_click(update):
     logger.info('User {} - {} got answer for question {}'.format(
         update._effective_user.id,
         update._effective_user.name,
-        callback_data["q_id"]
+        callback_data['q_id']
     ))
     callback_data['a'] = 'exp'
 
@@ -84,7 +84,7 @@ def apply_show_answer_click(update):
         text=answer.get_verified_answer(query.message.text_markdown),
         reply_markup=reply_markup,
         chat_id=query.message.chat_id,
-        message_id=callback_data["m_id"],
+        message_id=callback_data['m_id'],
         parse_mode=ParseMode.MARKDOWN
     )
 
@@ -105,12 +105,12 @@ def correct_answer_response(update, callback_data, answer):
     logger.info('User {} - {} got correct choice {} for question {}'.format(
         update._effective_user.id,
         update._effective_user.name,
-        callback_data["c_id"],
-        callback_data["q_id"]
+        callback_data['c_id'],
+        callback_data['q_id']
     ))
     message_text = answer.get_verified_question(
         query.message.text_markdown,
-        callback_data["c_id"]
+        callback_data['c_id']
     )
     callback_data.update({
         'a': 'exp',
@@ -133,13 +133,13 @@ def incorrect_answer_response(update, callback_data, answer):
     logger.info('User {} - {} got incorrect choice {} for question {}'.format(
         update._effective_user.id,
         update._effective_user.name,
-        callback_data["c_id"],
-        callback_data["q_id"],
+        callback_data['c_id'],
+        callback_data['q_id'],
     ))
 
     message_text = answer.get_selected_choice(
         query.message.text_markdown,
-        callback_data["c_id"]
+        callback_data['c_id']
     )
     # avoid redundant update in case of the same wrong choice
     if message_text == query.message.text_markdown:
@@ -184,7 +184,7 @@ def handle_button(update, context):
 
 def handle_start(update, context):
     """Displaying the starting message when bot starts."""
-    logger.info('Started chat %s with user %s - %s',
+    logger.info('Started chat %s with user {} - {}',
                 update._effective_chat.id,
                 update._effective_user.id,
                 update._effective_user.name
