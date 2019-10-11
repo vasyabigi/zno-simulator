@@ -33,15 +33,15 @@ def get_choices_buttons(question):
         for letter, choice in zip(question.choices_letters, question.choices))
 
 
-def get_inline_button(text, data):
+def get_inline_button(text, callback_data):
     return InlineKeyboardButton(
         text,
-        callback_data=json.dumps(data),
+        callback_data=json.dumps(callback_data),
         parse_mode=ParseMode.MARKDOWN,
     )
 
 
-def apply_explanation_click(update):
+def apply_show_explanation(update):
     """Handle 'explain' button click."""
     callback_data = json.loads(update.callback_query.data)
     answer = post_answer(callback_data['q_id'], callback_data['c_id'])
@@ -61,7 +61,7 @@ def apply_explanation_click(update):
     )
 
 
-def apply_show_answer_click(update):
+def apply_show_correct_answer(update):
     """Handle 'show correct answer' button click."""
     callback_data = json.loads(update.callback_query.data)
     answer = post_answer(callback_data["q_id"], callback_data["c_id"])
@@ -71,12 +71,11 @@ def apply_show_answer_click(update):
         update._effective_user.name,
         callback_data['q_id']
     ))
-    callback_data['a'] = 'exp'
 
     reply_markup = None
     if answer.has_explanation():
         reply_markup = InlineKeyboardMarkup.from_button(
-            get_inline_button(EXPLANATION_STR, callback_data)
+            get_inline_button(EXPLANATION_STR, callback_data={**callback_data, **{'a': 'exp'}})
         )
 
     query = update.callback_query
@@ -89,7 +88,7 @@ def apply_show_answer_click(update):
     )
 
 
-def apply_next_try(update):
+def apply_send_answer(update):
     callback_data = json.loads(update.callback_query.data)
     answer = post_answer(callback_data["q_id"], callback_data["c_id"])
 
@@ -167,9 +166,9 @@ def incorrect_answer_response(update, callback_data, answer):
 
 
 SUPPORTED_ACTIONS = {
-    'try': apply_next_try,
-    'ans': apply_show_answer_click,
-    'exp': apply_explanation_click,
+    'try': apply_send_answer,
+    'ans': apply_show_correct_answer,
+    'exp': apply_show_explanation,
 }
 
 
@@ -263,7 +262,7 @@ def configure_telegram():
     updater.dispatcher.add_handler(CallbackQueryHandler(handle_button))
 
     updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_start))
-    # updater.dispatcher.add_error_handler(handle_error)
+    updater.dispatcher.add_error_handler(handle_error)
     return updater
 
 
