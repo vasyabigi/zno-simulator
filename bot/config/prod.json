@@ -1,0 +1,6 @@
+{
+    "STAGE": "production",
+    "TELEGRAM_TOKEN": "898799858:AAHwN87xKFRDXqowhra44YPwvBC3HJj6jK4",
+    "API_ROOT": "http://zno-dev.eu-central-1.elasticbeanstalk.com",
+    "SENTRY_DSN": "https://5b3194f6d9274b699f7168219b9cf190@sentry.io/1769105"
+}

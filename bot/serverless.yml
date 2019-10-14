@@ -6,9 +6,10 @@ provider:
   name: aws
   runtime: python3.7
   environment:
-    TELEGRAM_TOKEN: ${file(./serverless.env.yml):TELEGRAM_TOKEN, ''}
-    API_ROOT: ${file(./serverless.env.yml):API_ROOT, ''}
-    SENTRY_DSN: ${file(./serverless.env.yml):SENTRY_DSN, ''}
+    STAGE: ${${self:custom.config}:STAGE}
+    TELEGRAM_TOKEN: ${${self:custom.config}:TELEGRAM_TOKEN}
+    API_ROOT: ${${self:custom.config}:API_ROOT}
+    SENTRY_DSN: ${${self:custom.config}:SENTRY_DSN}
 
 functions:
   webhook:
@@ -23,3 +24,7 @@ functions:
 
 plugins:
   - serverless-python-requirements
+
+custom:
+  stage: ${opt:stage, 'dev'}
+  config: file(./config/${self:custom.stage}.json)

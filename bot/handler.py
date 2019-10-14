@@ -10,7 +10,8 @@ from bot import configure_telegram
 
 sentry_sdk.init(
     dsn=config.sentry_dsn,
-    integrations=[AwsLambdaIntegration()]
+    environment=config.stage,
+    integrations=[AwsLambdaIntegration()],
 )
 
 # Logging is cool!
