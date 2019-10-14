@@ -34,6 +34,7 @@ class QuestionConverter:
             "choices": self.get_choices(),
             "content": self.get_content(),
             "explanation": self.get_explanation(),
+            "image": self.get_image(),
         }
 
     @staticmethod
@@ -76,12 +77,15 @@ class QuestionConverter:
 
         """
         is_supported = self.get_question_kind() in SUPPORTED_QUESTION_TYPES
+
         is_too_long = (
             len(self.get_content()) > MAX_TEXT_LENGTH
             or len(self.get_explanation()) > MAX_TEXT_LENGTH
         )
 
-        return is_supported and not is_too_long
+        too_many_images = len(self.content_post.find_all("img")) > 1
+
+        return is_supported and not is_too_long and not too_many_images
 
     def get_question_kind(self):
         links = self.content_get.find_all("a")
@@ -91,6 +95,12 @@ class QuestionConverter:
 
         type_url = links[-1].attrs["href"]
         return QUESTION_TYPE_URL_TO_KIND.get(type_url)
+
+    def get_image(self):
+        images = self.content_post.find("div", attrs={"class": "q-txt"}).find_all("img")
+
+        if len(images) == 1:
+            return f"https://zno.osvita.ua{images[0].attrs['src']}"
 
     def get_choices(self):
         dom_choices = self.content_post.find_all("div", attrs={"class": "q-item"})
