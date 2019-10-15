@@ -208,9 +208,10 @@ def get_subject_code(context):
         if value == context.bot.token:
             return key
 
+
 def handle_get(update, context):
     """Send user a question and answers options keyboard."""
-    subject=get_subject_code(context)
+    subject = get_subject_code(context)
     question = get_question(subject=subject)
 
     logger.info('User {} - {} got question {}'.format(
