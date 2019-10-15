@@ -13,6 +13,10 @@ QUESTION_TYPE_URL_TO_KIND = {
     "/dovidka/viditestiv/5/": "multiple-choice",
 }
 
+SUBJECTS_TO_CODES = {
+    "Українська мова і література": "ukr"
+}
+
 MAX_TEXT_LENGTH = 3600
 
 SUPPORTED_QUESTION_TYPES = ("single-choice",)
@@ -28,7 +32,7 @@ class QuestionConverter:
     def to_internal(self):
         return {
             "id": self.index,
-            "subject": self.raw_question["subject"],
+            "subject": self.get_subject(),
             "exam": self.raw_question["exam"],
             "kind": self.get_question_kind(),
             "choices": self.get_choices(),
@@ -95,6 +99,9 @@ class QuestionConverter:
 
         type_url = links[-1].attrs["href"]
         return QUESTION_TYPE_URL_TO_KIND.get(type_url)
+
+    def get_subject(self):
+        return SUBJECTS_TO_CODES[self.raw_question["subject"]]
 
     def get_image(self):
         images = self.content_post.find("div", attrs={"class": "q-txt"}).find_all("img")

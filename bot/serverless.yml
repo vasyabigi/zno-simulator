@@ -15,7 +15,7 @@ functions:
   webhook:
     handler: handler.webhook
     events:
-      - http: POST /
+      - http: POST /{subject}
 
   set_webhook:
     handler: handler.set_webhook

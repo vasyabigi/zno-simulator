@@ -10,12 +10,12 @@ from constants import (QUESTION_URL, ANSWER_URL, CHECK_MARK_BUTTON, CHECK_MARK_B
 logger = logging.getLogger(__name__)
 
 
-def get_question(question_id=None):
+def get_question(question_id=None, subject=None):
     """Get question from API."""
     q_id = question_id or 'random'
     logger.debug(f'Getting question from {QUESTION_URL.format(id=q_id)}')
     # TODO handle server status != 200
-    api_response = requests.get(QUESTION_URL.format(id=q_id))
+    api_response = requests.get(f'{QUESTION_URL.format(id=q_id)}?subject={subject}')
     logger.debug(
         f'API response {api_response.status_code} received: {api_response.content}'
     )
