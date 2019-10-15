@@ -15,7 +15,7 @@ class QuestionsResource():
         """Return question by given question_id. Return random question if question_id = random."""
         subject = req.get_param('subject')
 
-        if not subject or subject not in SUPPORTED_SUBJECTS_CODES:
+        if subject and subject not in SUPPORTED_SUBJECTS_CODES:
             raise falcon.HTTPBadRequest("Subject is not supported")
 
         try:

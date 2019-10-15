@@ -35,7 +35,9 @@ def webhook(event, context):
     Runs the Telegram webhook.
 
     """
-    bot_updater = configure_telegram()
+    subject = event["pathParameters"].get("subject")
+
+    bot_updater = configure_telegram(subject)
     logger.info("Event: {}".format(event))
 
     if event.get("httpMethod") == "POST" and event.get("body"):
@@ -55,8 +57,10 @@ def set_webhook(event, context):
     """
     logger.info("Event: {}".format(event))
     bot_updater = configure_telegram()
-    url = "https://{}/{}/".format(
-        event.get("headers").get("Host"), event.get("requestContext").get("stage")
+    url = "https://{host}/{stage}/{subject}/".format(
+        host=event.get("headers").get("Host"),
+        stage=event.get("requestContext").get("stage"),
+        subject=event["pathParameters"].get("subject"),
     )
     webhook = bot_updater.bot.set_webhook(url)
 

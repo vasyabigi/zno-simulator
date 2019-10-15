@@ -148,6 +148,7 @@ def incorrect_answer_response(update, callback_data, answer):
         'a': 'try',
         'm_id': update.effective_message.message_id
     })
+
     reply_markup = InlineKeyboardMarkup(
         [
             list(
@@ -201,9 +202,17 @@ def handle_start(update, context):
     )
 
 
+def get_subject_code(context):
+    # TODO: Fix the subject getter
+    for key, value in config.telegram_tokens.items():
+        if value == context.bot.token:
+            return key
+
+
 def handle_get(update, context):
     """Send user a question and answers options keyboard."""
-    question = get_question()
+    subject = get_subject_code(context)
+    question = get_question(subject=subject)
 
     logger.info('User {} - {} got question {}'.format(
         update._effective_user.id,
@@ -245,9 +254,8 @@ def handle_error(update, context):
     )
 
 
-def configure_telegram():
-    # Create the Updater and pass it your bot's token.
-    updater = Updater(config.telegram_token, use_context=True)
+def configure_telegram(subject):
+    updater = Updater(config.telegram_tokens[subject], use_context=True)
 
     updater.dispatcher.add_handler(CommandHandler('start', handle_start))
     updater.dispatcher.add_handler(MessageHandler(Filters.regex(f'^({START})$'), handle_start))
@@ -267,7 +275,7 @@ def configure_telegram():
 
 
 def main():
-    updater = configure_telegram()
+    updater = configure_telegram('ukr')
 
     # Start the Bot
     updater.start_polling()
