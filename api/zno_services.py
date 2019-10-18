@@ -12,6 +12,7 @@ QUESTIONS_URL = (
 
 class QuestionNotFoundError(Exception):
     """Custom exception should be raised when question with given id is not found."""
+
     pass
 
 
@@ -51,8 +52,21 @@ class QuestionsService:
 QUESTIONS_FROM_SERVER = QuestionsService.load_questions()
 
 SUBJECT_UKR = "ukr"
+SUBJECT_MATH = "math"
 SUBJECT_HIS = "his"
-SUPPORTED_SUBJECTS_CODES = [SUBJECT_UKR, SUBJECT_HIS]
+SUBJECT_GEO = "geo"
+SUBJECT_BIO = "bio"
+SUBJECT_PHYS = "phys"
+SUBJECT_CHEM = "chem"
+SUPPORTED_SUBJECTS_CODES = [
+    SUBJECT_UKR,
+    SUBJECT_MATH,
+    SUBJECT_HIS,
+    SUBJECT_GEO,
+    SUBJECT_BIO,
+    SUBJECT_PHYS,
+    SUBJECT_CHEM,
+]
 
 QUESTIONS = {}
 QUESTIONS_MAP = {}

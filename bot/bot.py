@@ -254,7 +254,7 @@ def handle_error(update, context):
     )
 
 
-def configure_telegram(subject):
+def configure_telegram(subject='ukr'):
     updater = Updater(config.telegram_tokens[subject], use_context=True)
 
     updater.dispatcher.add_handler(CommandHandler('start', handle_start))
@@ -275,7 +275,7 @@ def configure_telegram(subject):
 
 
 def main():
-    updater = configure_telegram('ukr')
+    updater = configure_telegram()
 
     # Start the Bot
     updater.start_polling()

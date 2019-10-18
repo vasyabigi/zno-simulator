@@ -1,11 +1,12 @@
-import string
-
 import tomd
 import lxml.html.clean as clean
 from bs4 import BeautifulSoup
 
+from .scrapper import SUBJECTS_TO_CODES
+
+
 cleaner = clean.Cleaner(
-    safe_attrs_only=True, safe_attrs=frozenset(), remove_tags=["em", "a"]
+    safe_attrs_only=True, safe_attrs=frozenset(), remove_tags=["em", "a", "sup"]
 )
 
 QUESTION_TYPE_URL_TO_KIND = {
@@ -13,9 +14,7 @@ QUESTION_TYPE_URL_TO_KIND = {
     "/dovidka/viditestiv/5/": "multiple-choice",
 }
 
-SUBJECTS_TO_CODES = {
-    "Українська мова і література": "ukr"
-}
+UA_LETTERS = "АБВГДЕЄЖЗ"
 
 MAX_TEXT_LENGTH = 3600
 
@@ -30,6 +29,9 @@ class QuestionConverter:
         self.content_post = BeautifulSoup(raw_question["content_post"], "html.parser")
 
     def to_internal(self):
+        # Extract image from the content
+        image = self.get_image()
+
         return {
             "id": self.index,
             "subject": self.get_subject(),
@@ -38,7 +40,7 @@ class QuestionConverter:
             "choices": self.get_choices(),
             "content": self.get_content(),
             "explanation": self.get_explanation(),
-            "image": self.get_image(),
+            "image": image,
         }
 
     @staticmethod
@@ -48,16 +50,21 @@ class QuestionConverter:
 
         """
         questions = []
-
+        per_subject = {}
         for index, raw_question in enumerate(raw_questions):
             question_converter = QuestionConverter(index, raw_question)
 
             if not question_converter.is_valid():
                 continue
 
-            questions.append(question_converter.to_internal())
+            data = question_converter.to_internal()
+            questions.append(data)
 
-        print(f"Converted {len(questions)}/{len(raw_questions)} questions.")
+            per_subject.setdefault(data['subject'], 0)
+            per_subject[data['subject']] += 1
+
+        for subject, value in per_subject.items():
+            print(f"Converted {value} {subject} questions.")
 
         return questions
 
@@ -107,6 +114,7 @@ class QuestionConverter:
         images = self.content_post.find("div", attrs={"class": "q-txt"}).find_all("img")
 
         if len(images) == 1:
+            images[0].extract()
             return f"https://zno.osvita.ua{images[0].attrs['src']}"
 
     def get_choices(self):
@@ -133,7 +141,7 @@ class QuestionConverter:
                 choices.append(
                     {
                         "id": index,
-                        "content": string.ascii_uppercase[index],
+                        "content": UA_LETTERS[index],
                         "is_correct": "ok" in dom_answers[index].attrs["class"],
                     }
                 )
