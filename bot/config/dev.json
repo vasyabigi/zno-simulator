@@ -1,8 +1,6 @@
 {
     "STAGE": "staging",
-    "TELEGRAM_TOKENS": {
-        "ukr": "930937042:AAGepbMiGQGOE4YJNinVK-5X8KGK0hpiDVI"
-    },
+    "TELEGRAM_TOKENS": "{\"ukr\": \"930937042:AAGepbMiGQGOE4YJNinVK-5X8KGK0hpiDVI\"}",
     "API_ROOT": "http://zno-dev.eu-central-1.elasticbeanstalk.com",
     "SENTRY_DSN": "https://5b3194f6d9274b699f7168219b9cf190@sentry.io/1769105"
 }

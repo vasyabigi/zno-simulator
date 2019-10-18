@@ -14,8 +14,14 @@ def get_question(question_id=None, subject=None):
     """Get question from API."""
     q_id = question_id or 'random'
     logger.debug(f'Getting question from {QUESTION_URL.format(id=q_id)}')
-    # TODO handle server status != 200
-    api_response = requests.get(f'{QUESTION_URL.format(id=q_id)}?subject={subject}')
+
+    # TODO Refactor the url getter
+    url = QUESTION_URL.format(id=q_id)
+    if subject:
+        url += f'?subject={subject}'
+
+    api_response = requests.get(url)
+
     logger.debug(
         f'API response {api_response.status_code} received: {api_response.content}'
     )

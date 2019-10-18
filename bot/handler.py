@@ -56,7 +56,7 @@ def set_webhook(event, context):
     Sets the Telegram bot webhook.
     """
     logger.info("Event: {}".format(event))
-    bot_updater = configure_telegram()
+    bot_updater = configure_telegram(event["pathParameters"].get("subject"))
     url = "https://{host}/{stage}/{subject}/".format(
         host=event.get("headers").get("Host"),
         stage=event.get("requestContext").get("stage"),

@@ -1,6 +1,6 @@
 {
     "STAGE": "production",
-    "TELEGRAM_TOKEN": "898799858:AAHwN87xKFRDXqowhra44YPwvBC3HJj6jK4",
+    "TELEGRAM_TOKENS": "{\"ukr\":\"898799858:AAHwN87xKFRDXqowhra44YPwvBC3HJj6jK4\",\"math\":\"931255354:AAEwpog_15vJmXI-3YTVkNrQFfMsI195he8\",\"his\":\"957378160:AAEXHJIKgslpWIdIio_8gGyQYGdKTSWrYPw\",\"geo\":\"960435760:AAEZn7pczkGHC4TbOPUwcnFz5nA0sXc3-5c\",\"bio\":\"956506191:AAErZqYNiXEZZGq8_5oAJ5WbXPnTlGHIcCk\",\"phys\":\"947727978:AAFRR_rlfbiE9NrzZ83_1B8j_3OLDVHQ1PU\"}",
     "API_ROOT": "http://zno-dev.eu-central-1.elasticbeanstalk.com",
     "SENTRY_DSN": "https://5b3194f6d9274b699f7168219b9cf190@sentry.io/1769105"
 }

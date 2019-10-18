@@ -11,7 +11,30 @@ from .config import API_BASE, SHOULD_SCRAPE_OSVITA_UA
 
 API_EXAM_TEST_URL = urljoin(API_BASE, "users/znotest/highload/")
 
-SUPPORTED_SUBJECTS = ["Українська мова і література"]
+SUPPORTED_SUBJECTS = [
+    "Українська мова і література",
+    "Математика",
+    "Історія України",
+    "Географія",
+    "Біологія",
+    "Фізика",
+    "Хімія",
+    # "Англійська мова",
+    # "Німецька мова",
+    # "Французька мова",
+    # "Іспанська мова",
+    # "ЗНО в магістратуру",
+]
+
+SUBJECTS_TO_CODES = {
+    "Українська мова і література": "ukr",
+    "Математика": "math",
+    "Історія України": "his",
+    "Географія": "geo",
+    "Біологія": "bio",
+    "Фізика": "phys",
+    "Хімія": "chem",
+}
 
 
 async def fetch(session, url):
@@ -60,7 +83,8 @@ async def parse_subject(session, subject_data):
     subject_questions = list(chain(*exams_questions))
 
     # Save questions to local folder
-    with open("raw_questions.json", "w") as f:
+    code = SUBJECTS_TO_CODES[subject_title]
+    with open(f"content/data/{code}.json", "w") as f:
         json.dump(subject_questions, f)
 
     return subject_questions
@@ -117,7 +141,12 @@ async def parse_exam_questions(session, exam_data, subject_title):
 
 async def get_osvita_ua_questions():
     if not SHOULD_SCRAPE_OSVITA_UA:
-        with open("raw_questions.json", "r") as f:
-            return json.loads(f.read())
+        questions = []
+
+        for code in SUBJECTS_TO_CODES.values():
+            with open(f"content/data/{code}.json", "r") as f:
+                questions.extend(json.loads(f.read()))
+
+        return questions
 
     return await parse_osvita_ua_questions()
