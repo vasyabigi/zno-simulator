@@ -1,7 +1,7 @@
 import falcon
 
 import logger
-from zno_services import QuestionsService, QuestionNotFoundError, SUPPORTED_SUBJECTS_CODES
+from services import QuestionsService, QuestionNotFoundError, SUPPORTED_SUBJECTS_CODES
 
 
 log = logger.getLogger('zno_api')

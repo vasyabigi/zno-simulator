@@ -4,10 +4,25 @@ import random
 
 import requests
 
-IS_FETCH_REQUIRED = os.environ.get("IS_FETCH_REQUIRED", False)
-QUESTIONS_URL = (
-    "https://much-better-adventures.s3.eu-central-1.amazonaws.com/questions.json"
-)
+IS_FETCH_REQUIRED = os.getenv("IS_FETCH_REQUIRED", False)
+QUESTIONS_URL = os.getenv("QUESTIONS_URL")
+
+SUBJECT_UKR = "ukr"
+SUBJECT_MATH = "math"
+SUBJECT_HIS = "his"
+SUBJECT_GEO = "geo"
+SUBJECT_BIO = "bio"
+SUBJECT_PHYS = "phys"
+SUBJECT_CHEM = "chem"
+SUPPORTED_SUBJECTS_CODES = [
+    SUBJECT_UKR,
+    SUBJECT_MATH,
+    SUBJECT_HIS,
+    SUBJECT_GEO,
+    SUBJECT_BIO,
+    SUBJECT_PHYS,
+    SUBJECT_CHEM,
+]
 
 
 class QuestionNotFoundError(Exception):
@@ -29,7 +44,7 @@ class QuestionsService:
         return json.loads(response.content)
 
     @staticmethod
-    def load_random_question(subject="ukr"):
+    def load_random_question(subject=SUBJECT_UKR):
         question_id = random.choice(QUESTIONS[subject])
         question_data = QUESTIONS_MAP[question_id]
         return question_data
@@ -50,23 +65,6 @@ class QuestionsService:
 
 
 QUESTIONS_FROM_SERVER = QuestionsService.load_questions()
-
-SUBJECT_UKR = "ukr"
-SUBJECT_MATH = "math"
-SUBJECT_HIS = "his"
-SUBJECT_GEO = "geo"
-SUBJECT_BIO = "bio"
-SUBJECT_PHYS = "phys"
-SUBJECT_CHEM = "chem"
-SUPPORTED_SUBJECTS_CODES = [
-    SUBJECT_UKR,
-    SUBJECT_MATH,
-    SUBJECT_HIS,
-    SUBJECT_GEO,
-    SUBJECT_BIO,
-    SUBJECT_PHYS,
-    SUBJECT_CHEM,
-]
 
 QUESTIONS = {}
 QUESTIONS_MAP = {}

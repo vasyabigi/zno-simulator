@@ -1,15 +1,15 @@
+import os
 import json
 import falcon
 import sentry_sdk
+import logger
 
 from sentry_sdk.integrations.falcon import FalconIntegration
 
-import logger
-from zno_api_resources import QuestionsResource, AnswersResource
+from api_resources import QuestionsResource, AnswersResource
 
 
-sentry_sdk.init(dsn="https://068e491992e74a3dbd3a5ac0d0b0039c@sentry.io/1769079",
-                integrations=[FalconIntegration()])
+sentry_sdk.init(dsn=os.getenv("SENTRY_DSN"), integrations=[FalconIntegration()])
 
 
 def handle_404(req, resp):
