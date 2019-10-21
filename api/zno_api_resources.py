@@ -31,7 +31,7 @@ class QuestionsResource():
             resp.media = {'id': question['id'],
                           'content': question['content'],
                           'image': question['image'],
-                          'explanation': question['explanation'],
+                          # 'explanation': question['explanation'],
                           'choices': [{'id': choice['id'], 'content': choice['content']}
                                       for choice in question['choices']]}
             resp.status = falcon.HTTP_200
@@ -55,7 +55,10 @@ class AnswersResource():
             resp.status = falcon.HTTP_404
 
         else:
-            resp.media = {'is_correct': QuestionsService.check_answers(question, choices),
+            resp.media = {'id': question['id'],
+                          'content': question['content'],
+                          'image': question['image'],
+                          'is_correct': QuestionsService.check_answers(question, choices),
                           'choices': question['choices'],
                           'explanation': question.get('explanation')}
             resp.status = falcon.HTTP_200

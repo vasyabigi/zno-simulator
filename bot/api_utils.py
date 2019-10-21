@@ -30,6 +30,70 @@ def get_question(question_id=None, subject=None):
 
 def post_answer(question_id, choice_id):
     """Post chosen answer and get the response with details."""
+    if choice_id == 1:
+        answer = TelegramAnswer(
+            {
+                "id": 1233,
+                "content": "Спільнокореневим до слова гора є",
+                "image": None,
+                "explanation": "*ТЕМА:* *Будова слова. Словотвір. Значущі частини слова: корінь, префікс, суфікс, закінчення*\n\nДля виконання цього завдання треба пригадати поняття значущих частин слова (морфем), зокрема кореня, і поняття «спільнокореневе слово».\n\nПроаналізуймо вміщені в завданні слова.\n\n*Горянка – *«жителька гір». Отже, це і є спільнокореневе слово до слова «гора».\n\n*Горечко* – «зменшувально-пестливе до слова «\"горе\"». Отже, спільнокореневими до нього будуть слова горе, горезвісний, горювати тощо.\n\n*Горючий* – «здатний горіти». Отже, спільнокореневими до нього будуть слова горіти, горіння, горючість тощо.\n\n*Гороскоп* – «таблиця розміщення небесних світил, яку складають астрологи для пророкування долі людини і майбутніх подій». Слово походить від грецького horoskopos – той, який спостерігає час.\n\n*ВІДПОВІДЬ – А.*",
+                "is_correct": True,
+                "choices": [
+                    {
+                        "id": 0,
+                        "content": "*А*: горянка",
+                        "is_correct": True
+                    },
+                    {
+                        "id": 1,
+                        "content": "*Б*: горечко",
+                        "is_correct": False
+                    },
+                    {
+                        "id": 2,
+                        "content": "*В*: горючий",
+                        "is_correct": False
+                    },
+                    {
+                        "id": 3,
+                        "content": "*Г*: гороскоп",
+                        "is_correct": False
+                    }
+                ]
+            })
+
+    else:
+        answer = TelegramAnswer(
+            {
+                "id": 1233,
+                "content": "Спільнокореневим до слова гора є",
+                "image": None,
+                "explanation": "*ТЕМА:* *Будова слова. Словотвір. Значущі частини слова: корінь, префікс, суфікс, закінчення*\n\nДля виконання цього завдання треба пригадати поняття значущих частин слова (морфем), зокрема кореня, і поняття «спільнокореневе слово».\n\nПроаналізуймо вміщені в завданні слова.\n\n*Горянка – *«жителька гір». Отже, це і є спільнокореневе слово до слова «гора».\n\n*Горечко* – «зменшувально-пестливе до слова «\"горе\"». Отже, спільнокореневими до нього будуть слова горе, горезвісний, горювати тощо.\n\n*Горючий* – «здатний горіти». Отже, спільнокореневими до нього будуть слова горіти, горіння, горючість тощо.\n\n*Гороскоп* – «таблиця розміщення небесних світил, яку складають астрологи для пророкування долі людини і майбутніх подій». Слово походить від грецького horoskopos – той, який спостерігає час.\n\n*ВІДПОВІДЬ – А.*",
+                "is_correct": False,
+                "choices": [
+                    {
+                        "id": 0,
+                        "content": "*А*: горянка",
+                        "is_correct": True
+                    },
+                    {
+                        "id": 1,
+                        "content": "*Б*: горечко",
+                        "is_correct": False
+                    },
+                    {
+                        "id": 2,
+                        "content": "*В*: горючий",
+                        "is_correct": False
+                    },
+                    {
+                        "id": 3,
+                        "content": "*Г*: гороскоп",
+                        "is_correct": False
+                    }
+                ]
+            })
+    return answer
     logger.debug(
         f'Sending answer {choice_id} for question {question_id} to {ANSWER_URL}'
     )
@@ -50,6 +114,7 @@ class TelegramQuestion:
         self.question = json.loads(question_data)
         self.q_id = self.question['id']
         self.choices = self.question['choices']
+        self.image = self.question.get('image')
 
     @property
     def choices_letters(self):
@@ -58,44 +123,66 @@ class TelegramQuestion:
             for choice in self.choices
         ]
 
-    def get_string(self):
+    @property
+    def content(self):
+        return f'{QUESTION_MARK} {self.question["content"]}\n\n'
+
+    def choices_str(self, *args, **kwargs):
         choices_str = '\n'.join(
             f'- {choice["content"]}' for choice in self.choices
         )
-        return f'{QUESTION_MARK} {self.question["content"]}\n\n{INDEX_POINTING_RIGHT} ' \
-               f'{CHOICES_AVAILABLE_B}\n{choices_str}'
+        return f'{INDEX_POINTING_RIGHT} {CHOICES_AVAILABLE_B}\n{choices_str}'
 
 
 class TelegramAnswer:
     """Class for handling api answer formatting for telegram message."""
 
     def __init__(self, answer_data):
-        self.answer = json.loads(answer_data)
+        # self.answer = json.loads(answer_data)
+        self.answer = answer_data
+        self.is_correct = self.answer['is_correct']
+        self.q_id = self.answer['id']
+        self.choices = self.answer['choices']
+        self.image = self.answer.get('image')
+
+    @property
+    def choices_letters(self):
+        return [
+            f'{choice["content"].split(":")[0].strip("*")}'
+            for choice in self.choices
+        ]
+
+    @property
+    def content(self):
+        return f'{QUESTION_MARK} {self.answer["content"]}\n\n'
+
+    def choices_str(self, verified=False):
+        if verified:
+            choices_str = self._get_marked_choices_str()
+        else:
+            choices_str = '\n'.join(
+                f'- {choice["content"]}' for choice in self.choices
+            )
+        return f'{INDEX_POINTING_RIGHT} {CHOICES_AVAILABLE_B}\n{choices_str}'
 
     def has_explanation(self):
         # TBD: Remove None from parsed content
-        return self.answer['explanation'] and self.answer['explanation'] != 'None'
-
-    def explanation(self, text_markdown):
-        return f'{text_markdown}\n\n{BOOK} {self.answer["explanation"]}'
+        return self.answer['explanation'] if self.answer['explanation'] else None
 
     @property
-    def is_correct(self):
-        return self.answer['is_correct']
+    def explanation(self):
+        return f'\n\n{BOOK} {self.answer["explanation"]}'
 
-    def get_selected_choice(self, message_text, selected_choice_id):
+    def selected_choice_str(self, selected_choice_id):
         """Get user choice with correct/incorrect mark."""
-        selected_choice = self.selected_choice_str(selected_choice_id)
-        message_text = message_text.split(f'\n\n{CROSS_MARK}')[0]
-        return (
-            f'{message_text}\n\n{self.get_mark()} {self._get_user_choice(selected_choice)}'
-        )
+        selected_choice = self.user_choice_str(selected_choice_id)
+        return f'{self.get_mark()} {self._get_user_choice(selected_choice)}'
 
     @staticmethod
     def _get_user_choice(selected_choice):
         return f'{YOUR_CHOICE_B} {selected_choice}'
 
-    def selected_choice_str(self, selected_choice_id):
+    def user_choice_str(self, selected_choice_id):
         [selected_choice] = [
             choice['content']
             for choice in self.answer['choices']
@@ -103,37 +190,12 @@ class TelegramAnswer:
         ]
         return selected_choice
 
-    def get_verified_question(self, message_text, selected_choice_id):
-        """Get question with marked choices and marked user answer."""
-        question = self._extract_question_str(message_text)
-        choices_string = self._get_marked_choices_str()
-
-        selected_choice = self.selected_choice_str(selected_choice_id)
-        return (
-            f'{question}{CHOICES_AVAILABLE_B}\n{choices_string}\n\n{self.get_mark()} '
-            f'{self._get_user_choice(selected_choice)}'
-        )
-
     def _get_marked_choices_str(self):
         choices_string = '\n'.join(
             f'{self.get_black_mark(choice)} {choice["content"]}'
             for choice in self.answer["choices"]
         )
         return choices_string
-
-    def get_verified_answer(self, message_text):
-        """Get question with marked choices and correct answer."""
-        question = self._extract_question_str(message_text)
-        choices_string = self._get_marked_choices_str()
-        [correct_choice] = [
-            choice['content']
-            for choice in self.answer['choices']
-            if choice['is_correct'] is True
-        ]
-        return (
-            f'{question}{CHOICES_AVAILABLE_B}\n{choices_string}\n\n{CHECK_MARK_BUTTON} '
-            f'{CORRECT_ANSWER_B} {correct_choice}'
-        )
 
     @staticmethod
     def _extract_question_str(message_text):

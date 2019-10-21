@@ -25,12 +25,12 @@ logger = logging.getLogger('zno_bot_ukrainian')
 
 
 def get_choices_buttons(question):
-    return (get_inline_button(letter, {
-        'a': 'try',
-        'c_id': choice['id'],  # choice id
-        'q_id': question.q_id,  # question id
-    })
-        for letter, choice in zip(question.choices_letters, question.choices))
+    return [get_inline_button(letter, {
+                                'action': 'ans',
+                                'c_id': choice['id'],  # choice id
+                                'q_id': question.q_id,  # question id
+                            })
+            for letter, choice in zip(question.choices_letters, question.choices)]
 
 
 def get_inline_button(text, callback_data):
@@ -41,150 +41,9 @@ def get_inline_button(text, callback_data):
     )
 
 
-def apply_show_explanation(update):
-    """Handle 'explain' button click."""
-    callback_data = json.loads(update.callback_query.data)
-    answer = post_answer(callback_data['q_id'], callback_data['c_id'])
-
-    logger.info('User {} - {} got explanation for question {}'.format(
-        update._effective_user.id,
-        update._effective_user.name,
-        callback_data['q_id']
-    ))
-
-    query = update.callback_query
-    query.bot.edit_message_text(
-        text=answer.explanation(query.message.text_markdown),
-        chat_id=query.message.chat_id,
-        message_id=callback_data['m_id'],
-        parse_mode=ParseMode.MARKDOWN
-    )
-
-
-def apply_show_correct_answer(update):
-    """Handle 'show correct answer' button click."""
-    callback_data = json.loads(update.callback_query.data)
-    answer = post_answer(callback_data["q_id"], callback_data["c_id"])
-
-    logger.info('User {} - {} got answer for question {}'.format(
-        update._effective_user.id,
-        update._effective_user.name,
-        callback_data['q_id']
-    ))
-
-    reply_markup = None
-    if answer.has_explanation():
-        reply_markup = InlineKeyboardMarkup.from_button(
-            get_inline_button(EXPLANATION_STR, callback_data={**callback_data, **{'a': 'exp'}})
-        )
-
-    query = update.callback_query
-    query.bot.edit_message_text(
-        text=answer.get_verified_answer(query.message.text_markdown),
-        reply_markup=reply_markup,
-        chat_id=query.message.chat_id,
-        message_id=callback_data['m_id'],
-        parse_mode=ParseMode.MARKDOWN
-    )
-
-
-def apply_send_answer(update):
-    callback_data = json.loads(update.callback_query.data)
-    answer = post_answer(callback_data["q_id"], callback_data["c_id"])
-
-    if answer.is_correct:
-        correct_answer_response(update, callback_data, answer)
-
-    else:
-        incorrect_answer_response(update, callback_data, answer)
-
-
-def correct_answer_response(update, callback_data, answer):
-    query = update.callback_query
-    logger.info('User {} - {} got correct choice {} for question {}'.format(
-        update._effective_user.id,
-        update._effective_user.name,
-        callback_data['c_id'],
-        callback_data['q_id']
-    ))
-    message_text = answer.get_verified_question(
-        query.message.text_markdown,
-        callback_data['c_id']
-    )
-    callback_data.update({
-        'a': 'exp',
-        'm_id': update.effective_message.message_id
-    })
-    reply_markup = None
-    if answer.has_explanation():
-        reply_markup = InlineKeyboardMarkup.from_button(
-            get_inline_button(EXPLANATION_STR, callback_data)
-        )
-    update.callback_query.edit_message_text(
-        text=message_text,
-        reply_markup=reply_markup,
-        parse_mode=ParseMode.MARKDOWN,
-    )
-
-
-def incorrect_answer_response(update, callback_data, answer):
-    query = update.callback_query
-    logger.info('User {} - {} got incorrect choice {} for question {}'.format(
-        update._effective_user.id,
-        update._effective_user.name,
-        callback_data['c_id'],
-        callback_data['q_id'],
-    ))
-
-    message_text = answer.get_selected_choice(
-        query.message.text_markdown,
-        callback_data['c_id']
-    )
-    # avoid redundant update in case of the same wrong choice
-    if message_text == query.message.text_markdown:
-        return
-
-    callback_data.update({
-        'a': 'try',
-        'm_id': update.effective_message.message_id
-    })
-
-    reply_markup = InlineKeyboardMarkup(
-        [
-            list(
-                get_choices_buttons(get_question(question_id=callback_data['q_id']))
-            ),
-            [
-                get_inline_button(SHOW_ANSWER, {**callback_data, **{'a': 'ans'}})
-            ],
-        ]
-    )
-    update.callback_query.edit_message_text(
-        text=message_text,
-        reply_markup=reply_markup,
-        parse_mode=ParseMode.MARKDOWN,
-    )
-
-
-SUPPORTED_ACTIONS = {
-    'try': apply_send_answer,
-    'ans': apply_show_correct_answer,
-    'exp': apply_show_explanation,
-}
-
-
-def handle_button(update, context):
-    """Handle button click."""
-    callback_data = json.loads(update.callback_query.data)
-    # Select action:
-    apply_action = SUPPORTED_ACTIONS[callback_data['a']]
-    # Apply action:
-    apply_action(update)
-
-
 def handle_start(update, context):
     """Displaying the starting message when bot starts."""
-    logger.info('Started chat %s with user {} - {}',
+    logger.info('Started chat {} with user {} - {}',
                 update._effective_chat.id,
                 update._effective_user.id,
                 update._effective_user.name
@@ -209,25 +68,117 @@ def get_subject_code(context):
             return key
 
 
+def render_question(update, context, question, is_verified=False, given_answer=None, is_explained=False):
+    question_str = f'{question.content}'
+    choices_str = question.choices_str(verified=is_verified)
+
+    if given_answer:
+        # render_user_choice(given_answer)
+        data = json.loads(update.callback_query.data)
+        answ_str = 'Correct' if question.is_correct else 'Incorrect'
+        msg_text = f'{question_str} {choices_str} \n{answ_str} \n{question.selected_choice_str(given_answer)} \n try again'
+        markup = InlineKeyboardMarkup(
+            [
+                list(
+                    get_choices_buttons(question)
+                ),
+                [
+                    get_inline_button(SHOW_ANSWER, {**data, **{'action': 'cor'}})
+                ],
+            ]
+        )
+        update.callback_query.edit_message_text(text=msg_text, reply_markup=markup, parse_mode=ParseMode.MARKDOWN)
+        # if correct: explanation button
+        return
+
+    if not is_verified:
+        msg_text = f'{question_str} {choices_str}'
+        markup = InlineKeyboardMarkup.from_row(get_choices_buttons(question))
+        context.bot.send_message(
+            chat_id=update.message.chat_id,
+            text=msg_text,
+            reply_markup=markup,
+            parse_mode=ParseMode.MARKDOWN
+        )
+
+    if is_explained:
+        # render_explanation()
+        msg_text = f'{question_str} {choices_str} {question.explanation}'
+        update.callback_query.edit_message_text(
+            text=msg_text,
+            reply_markup=None,
+            parse_mode=ParseMode.MARKDOWN,
+        )
+
+    if is_verified and not is_explained:
+        # render_show_explanation()
+        data = json.loads(update.callback_query.data)
+
+        msg_text = f'{question_str} {choices_str}'
+        data.update({
+            'action': 'exp',
+            'm_id': update.effective_message.message_id
+        })
+        reply_markup = None
+        if question.has_explanation():
+            reply_markup = InlineKeyboardMarkup.from_button(
+                get_inline_button(EXPLANATION_STR, data)
+            )
+        update.callback_query.edit_message_text(
+            text=msg_text,
+            reply_markup=reply_markup,
+            parse_mode=ParseMode.MARKDOWN,
+        )
+
+
+def apply_send_answer(update, context):
+    data = json.loads(update.callback_query.data)
+
+    answer = post_answer(data['q_id'], data['c_id'])
+    is_correct = answer.is_correct
+
+    if is_correct:
+        render_question(update, context, answer, is_verified=True, given_answer=data["c_id"])
+    else:
+        render_question(update, context, answer, is_verified=False, given_answer=data["c_id"])
+
+
+def apply_show_correct_answer(update, context):
+    data = json.loads(update.callback_query.data)
+
+    answer = post_answer(data['q_id'], data['c_id'])
+    render_question(update, context, answer, is_verified=True)
+
+
+def apply_show_explanation(update, context):
+    data = json.loads(update.callback_query.data)
+
+    answer = post_answer(data['q_id'], data['c_id'])
+    render_question(update, context, answer, is_verified=True, is_explained=True)
+
+
+SUPPORTED_ACTIONS = {
+    'ans': apply_send_answer,
+    'cor': apply_show_correct_answer,
+    'exp': apply_show_explanation,
+}
+
+
+def handle_button(update, context):
+    """Handle button click."""
+    callback_data = json.loads(update.callback_query.data)
+    # Select action:
+    apply_action = SUPPORTED_ACTIONS[callback_data['action']]
+    # Apply action:
+    apply_action(update, context)
+
+
 def handle_get(update, context):
     """Send user a question and answers options keyboard."""
     subject = get_subject_code(context)
-    question = get_question(subject=subject)
+    question = get_question(subject='ukr')
 
-    logger.info('User {} - {} got question {}'.format(
-        update._effective_user.id,
-        update._effective_user.name,
-        question.q_id
-    ))
-
-    reply_markup = InlineKeyboardMarkup.from_row(
-        get_choices_buttons(question)
-    )
-    update.message.reply_text(
-        question.get_string(),
-        reply_markup=reply_markup,
-        parse_mode=ParseMode.MARKDOWN,
-    )
+    render_question(update, context, question)
 
 
 def handle_help(update, context):
@@ -255,7 +206,8 @@ def handle_error(update, context):
 
 
 def configure_telegram(subject='ukr'):
-    updater = Updater(config.telegram_tokens[subject], use_context=True)
+    updater = Updater('868338601:AAHan9WVG5cBLx7gFn1_1GLyS4qMEo4XEjA', use_context=True)
+    # updater = Updater(config.telegram_tokens[subject], use_context=True)
 
     updater.dispatcher.add_handler(CommandHandler('start', handle_start))
     updater.dispatcher.add_handler(MessageHandler(Filters.regex(f'^({START})$'), handle_start))
@@ -270,7 +222,7 @@ def configure_telegram(subject='ukr'):
     updater.dispatcher.add_handler(CallbackQueryHandler(handle_button))
 
     updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_start))
-    updater.dispatcher.add_error_handler(handle_error)
+    # updater.dispatcher.add_error_handler(handle_error)
     return updater
 
 
