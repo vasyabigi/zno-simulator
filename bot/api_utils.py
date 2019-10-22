@@ -74,8 +74,7 @@ class TelegramAnswer:
     """Class for handling api answer formatting for telegram message."""
 
     def __init__(self, answer_data):
-        # self.answer = json.loads(answer_data)
-        self.answer = answer_data
+        self.answer = json.loads(answer_data)
         self.is_correct = self.answer['is_correct']
         self.q_id = self.answer['id']
         self.choices = self.answer['choices']
@@ -109,10 +108,6 @@ class TelegramAnswer:
     @property
     def explanation(self):
         return f'\n\n{BOOK} {self.answer["explanation"]}'
-
-    @property
-    def is_correct(self):
-        return self.answer['is_correct']
 
     def selected_choice_str(self, selected_choice_id):
         [selected_choice] = [
