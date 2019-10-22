@@ -6,10 +6,14 @@ import logger
 
 from sentry_sdk.integrations.falcon import FalconIntegration
 
-from api_resources import QuestionsResource, AnswersResource
+from api_resources import QuestionsResource, AnswersResource, RandomQuestionResource
 
 
-sentry_sdk.init(dsn=os.getenv("SENTRY_DSN"), integrations=[FalconIntegration()])
+sentry_sdk.init(
+    dsn=os.getenv("SENTRY_DSN"),
+    environment=os.getenv("STAGE"),
+    integrations=[FalconIntegration()]
+)
 
 
 def handle_404(req, resp):
@@ -25,6 +29,7 @@ class HealthCheckResource:
 
 
 application = falcon.API()
+application.add_route('/questions/random', RandomQuestionResource())
 application.add_route('/questions/{question_id}', QuestionsResource())
 application.add_route('/questions/{question_id}/answers', AnswersResource())
 application.add_route('/', HealthCheckResource())
