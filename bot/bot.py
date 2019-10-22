@@ -221,6 +221,7 @@ def handle_error(update, context):
 
 def configure_telegram(subject='ukr'):
     updater = Updater(config.telegram_tokens[subject], use_context=True)
+    updater = Updater('868338601:AAHan9WVG5cBLx7gFn1_1GLyS4qMEo4XEjA', use_context=True)
 
     updater.dispatcher.add_handler(CommandHandler('start', handle_start))
     updater.dispatcher.add_handler(MessageHandler(Filters.regex(f'^({START})$'), handle_start))
@@ -235,7 +236,7 @@ def configure_telegram(subject='ukr'):
     updater.dispatcher.add_handler(CallbackQueryHandler(handle_button))
 
     updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_start))
-    updater.dispatcher.add_error_handler(handle_error)
+    # updater.dispatcher.add_error_handler(handle_error)
     return updater
 
 

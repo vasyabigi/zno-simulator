@@ -110,6 +110,18 @@ class TelegramAnswer:
     def explanation(self):
         return f'\n\n{BOOK} {self.answer["explanation"]}'
 
+    @property
+    def is_correct(self):
+        return self.answer['is_correct']
+
+    def selected_choice_str(self, selected_choice_id):
+        [selected_choice] = [
+            choice['content']
+            for choice in self.answer['choices']
+            if choice['id'] == selected_choice_id
+        ]
+        return selected_choice
+
     def _get_marked_choices_str(self):
         choices_string = '\n'.join(
             f'{self.get_black_mark(choice)} {choice["content"]}'
