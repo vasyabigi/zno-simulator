@@ -81,7 +81,7 @@ def render_answer(update, answer, is_verified=False, is_explained=False):
 
     if answer.image:
         update.callback_query.edit_message_caption(
-            caption=f'{choices_str} {msg_str}',
+            caption=f'{msg_str}',
             reply_markup=markup
         )
     else:
@@ -221,7 +221,6 @@ def handle_error(update, context):
 
 def configure_telegram(subject='ukr'):
     updater = Updater(config.telegram_tokens[subject], use_context=True)
-    updater = Updater('868338601:AAHan9WVG5cBLx7gFn1_1GLyS4qMEo4XEjA', use_context=True)
 
     updater.dispatcher.add_handler(CommandHandler('start', handle_start))
     updater.dispatcher.add_handler(MessageHandler(Filters.regex(f'^({START})$'), handle_start))

@@ -5,7 +5,7 @@ import requests
 
 from constants import (QUESTION_URL, ANSWER_URL, CHECK_MARK_BUTTON, CHECK_MARK_BLACK, CROSS_MARK,
                        CROSS_MARK_BLACK, QUESTION_MARK, INDEX_POINTING_RIGHT, BOOK,
-                       CHOICES_AVAILABLE_B)
+                       CHOICES_AVAILABLE_B, YOUR_CHOICE_B)
 
 logger = logging.getLogger(__name__)
 
@@ -110,6 +110,15 @@ class TelegramAnswer:
         return f'\n\n{BOOK} {self.answer["explanation"]}'
 
     def selected_choice_str(self, selected_choice_id):
+        """Get user choice with correct/incorrect mark."""
+        selected_choice = self.user_choice_str(selected_choice_id)
+        return f'{self.mark} {self._get_user_choice(selected_choice)}'
+
+    @staticmethod
+    def _get_user_choice(selected_choice):
+        return f'{YOUR_CHOICE_B} {selected_choice}'
+
+    def user_choice_str(self, selected_choice_id):
         [selected_choice] = [
             choice['content']
             for choice in self.answer['choices']
