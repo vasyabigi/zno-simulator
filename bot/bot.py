@@ -18,19 +18,19 @@ from telegram.parsemode import ParseMode
 import config
 from api_utils import get_question, post_answer
 from constants import (START, EXPLANATION_STR, QUESTION, QUESTION_BOOKS, GREETING_STR, HELP,
-                       SORRY_ERROR, SHOW_ANSWER, HELP_STR)
+                       SORRY_ERROR, SHOW_ANSWER, HELP_STR, CORRECT_CHOICE_STR, INCORRECT_CHOICE_STR)
 
 logging.basicConfig(level=logging.INFO, style='{')
 logger = logging.getLogger('zno_bot_ukrainian')
 
 
 def get_choices_buttons(question):
-    return [get_inline_button(letter, {
-                                'action': 'ans',
-                                'c_id': choice['id'],  # choice id
-                                'q_id': question.q_id,  # question id
-                            })
-            for letter, choice in zip(question.choices_letters, question.choices)]
+    return (get_inline_button(letter, {'action': 'ans',
+                                       'c_id': choice['id'],  # choice id
+                                       'q_id': question.q_id,  # question id
+                                       })
+            for letter, choice in zip(question.choices_letters, question.choices)
+            )
 
 
 def get_inline_button(text, callback_data):
@@ -43,19 +43,12 @@ def get_inline_button(text, callback_data):
 
 def handle_start(update, context):
     """Displaying the starting message when bot starts."""
-    logger.info('Started chat {} with user {} - {}',
-                update._effective_chat.id,
-                update._effective_user.id,
-                update._effective_user.name
-                )
-
     markup = ReplyKeyboardMarkup(
         keyboard=[[f'{QUESTION_BOOKS} {QUESTION}']],
         resize_keyboard=True
     )
-    context.bot.send_message(
-        chat_id=update.message.chat_id,
-        text=GREETING_STR,
+    update.message.reply_text(
+        GREETING_STR,
         reply_markup=markup,
         parse_mode=ParseMode.MARKDOWN
     )
@@ -68,93 +61,102 @@ def get_subject_code(context):
             return key
 
 
-def render_question(update, context, question, is_verified=False, given_answer=None, is_explained=False):
-    question_str = f'{question.content}'
-    choices_str = question.choices_str(verified=is_verified)
+def render_answer(update, answer, is_verified=False, is_explained=False):
+    question_str = answer.content if not answer.image else ''
+    choices_str = answer.choices_str(verified=is_verified)
+    data = json.loads(update.callback_query.data)
 
-    if given_answer:
-        # render_user_choice(given_answer)
-        data = json.loads(update.callback_query.data)
-        answ_str = 'Correct' if question.is_correct else 'Incorrect'
-        msg_text = f'{question_str} {choices_str} \n{answ_str} \n{question.selected_choice_str(given_answer)} \n try again'
-        markup = InlineKeyboardMarkup(
-            [
-                list(
-                    get_choices_buttons(question)
-                ),
-                [
-                    get_inline_button(SHOW_ANSWER, {**data, **{'action': 'cor'}})
-                ],
-            ]
-        )
-        update.callback_query.edit_message_text(text=msg_text, reply_markup=markup, parse_mode=ParseMode.MARKDOWN)
-        # if correct: explanation button
-        return
-
-    if not is_verified:
-        msg_text = f'{question_str} {choices_str}'
-        markup = InlineKeyboardMarkup.from_row(get_choices_buttons(question))
-        context.bot.send_message(
-            chat_id=update.message.chat_id,
-            text=msg_text,
-            reply_markup=markup,
-            parse_mode=ParseMode.MARKDOWN
-        )
+    markup, msg_str = render_user_choice(answer, data, choices_str)
 
     if is_explained:
-        # render_explanation()
-        msg_text = f'{question_str} {choices_str} {question.explanation}'
-        update.callback_query.edit_message_text(
-            text=msg_text,
-            reply_markup=None,
-            parse_mode=ParseMode.MARKDOWN,
-        )
+        markup = None
+        msg_str = f'{msg_str} {answer.explanation}'
 
     if is_verified and not is_explained:
-        # render_show_explanation()
-        data = json.loads(update.callback_query.data)
+        markup = render_show_explanation(update, data, answer)
 
-        msg_text = f'{question_str} {choices_str}'
-        data.update({
-            'action': 'exp',
-            'm_id': update.effective_message.message_id
-        })
-        reply_markup = None
-        if question.has_explanation():
-            reply_markup = InlineKeyboardMarkup.from_button(
-                get_inline_button(EXPLANATION_STR, data)
-            )
+    # avoid redundant update in case of the same wrong choice
+    if message_not_modified(update, msg_str, question_str, choices_str):
+        return
+
+    if answer.image:
+        update.callback_query.edit_message_caption(
+            caption=f'{choices_str} {msg_str}',
+            reply_markup=markup
+        )
+    else:
         update.callback_query.edit_message_text(
-            text=msg_text,
-            reply_markup=reply_markup,
+            text=f'{question_str} {msg_str}',
+            reply_markup=markup,
             parse_mode=ParseMode.MARKDOWN,
         )
 
 
-def apply_send_answer(update, context):
+def message_not_modified(update, msg_str, question_str, choices_str):
+    current_text = update.callback_query.message.text_markdown
+    if f'{question_str} {msg_str}' == current_text or \
+       f'{choices_str} {msg_str}' == current_text:
+        return True
+
+
+def render_user_choice(answer, data, choices_str):
+    if answer.is_correct:
+        answ_str = CORRECT_CHOICE_STR
+        keyboard = [[
+            get_inline_button(EXPLANATION_STR, {**data, **{'action': 'exp'}})
+        ]]
+    else:
+        answ_str = INCORRECT_CHOICE_STR
+        keyboard = [
+            list(
+                get_choices_buttons(answer)
+            ),
+            [
+                get_inline_button(SHOW_ANSWER, {**data, **{'action': 'cor'}})
+            ],
+        ]
+    msg_str = choices_str + answ_str.format(answer.selected_choice_str(data["c_id"]))
+    markup = InlineKeyboardMarkup(keyboard)
+    return markup, msg_str
+
+
+def render_show_explanation(update, data, answer):
+    markup = None
+    if answer.has_explanation:
+        markup = InlineKeyboardMarkup.from_button(
+            get_inline_button(EXPLANATION_STR, {**data,
+                                                **{'action': 'exp'},
+                                                **{'m_id': update.effective_message.message_id}
+                                                }
+                              )
+        )
+    return markup
+
+
+def apply_send_answer(update):
     data = json.loads(update.callback_query.data)
 
     answer = post_answer(data['q_id'], data['c_id'])
     is_correct = answer.is_correct
 
     if is_correct:
-        render_question(update, context, answer, is_verified=True, given_answer=data["c_id"])
+        render_answer(update, answer, is_verified=True)
     else:
-        render_question(update, context, answer, is_verified=False, given_answer=data["c_id"])
+        render_answer(update, answer, is_verified=False)
 
 
-def apply_show_correct_answer(update, context):
+def apply_show_correct_answer(update):
     data = json.loads(update.callback_query.data)
 
     answer = post_answer(data['q_id'], data['c_id'])
-    render_question(update, context, answer, is_verified=True)
+    render_answer(update, answer, is_verified=True)
 
 
-def apply_show_explanation(update, context):
+def apply_show_explanation(update):
     data = json.loads(update.callback_query.data)
 
     answer = post_answer(data['q_id'], data['c_id'])
-    render_question(update, context, answer, is_verified=True, is_explained=True)
+    render_answer(update, answer, is_verified=True, is_explained=True)
 
 
 SUPPORTED_ACTIONS = {
@@ -170,15 +172,27 @@ def handle_button(update, context):
     # Select action:
     apply_action = SUPPORTED_ACTIONS[callback_data['action']]
     # Apply action:
-    apply_action(update, context)
+    apply_action(update)
 
 
 def handle_get(update, context):
     """Send user a question and answers options keyboard."""
     subject = get_subject_code(context)
-    question = get_question(subject='ukr')
-
-    render_question(update, context, question)
+    question = get_question(subject=subject)
+    markup = InlineKeyboardMarkup.from_row(get_choices_buttons(question))
+    if question.image:
+        update.message.reply_photo(
+            photo=question.image,
+            caption=question.choices_str(),
+            reply_markup=markup,
+            parse_mode=ParseMode.MARKDOWN
+        )
+    else:
+        update.message.reply_text(
+            question.content + question.choices_str(),
+            reply_markup=markup,
+            parse_mode=ParseMode.MARKDOWN
+        )
 
 
 def handle_help(update, context):
@@ -206,8 +220,7 @@ def handle_error(update, context):
 
 
 def configure_telegram(subject='ukr'):
-    updater = Updater('868338601:AAHan9WVG5cBLx7gFn1_1GLyS4qMEo4XEjA', use_context=True)
-    # updater = Updater(config.telegram_tokens[subject], use_context=True)
+    updater = Updater(config.telegram_tokens[subject], use_context=True)
 
     updater.dispatcher.add_handler(CommandHandler('start', handle_start))
     updater.dispatcher.add_handler(MessageHandler(Filters.regex(f'^({START})$'), handle_start))
@@ -222,7 +235,7 @@ def configure_telegram(subject='ukr'):
     updater.dispatcher.add_handler(CallbackQueryHandler(handle_button))
 
     updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_start))
-    # updater.dispatcher.add_error_handler(handle_error)
+    updater.dispatcher.add_error_handler(handle_error)
     return updater
 
 

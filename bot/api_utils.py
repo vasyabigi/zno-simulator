@@ -127,7 +127,7 @@ class TelegramQuestion:
     def content(self):
         return f'{QUESTION_MARK} {self.question["content"]}\n\n'
 
-    def choices_str(self, *args, **kwargs):
+    def choices_str(self):
         choices_str = '\n'.join(
             f'- {choice["content"]}' for choice in self.choices
         )
@@ -165,30 +165,14 @@ class TelegramAnswer:
             )
         return f'{INDEX_POINTING_RIGHT} {CHOICES_AVAILABLE_B}\n{choices_str}'
 
+    @property
     def has_explanation(self):
         # TBD: Remove None from parsed content
-        return self.answer['explanation'] if self.answer['explanation'] else None
+        return True if self.answer['explanation'] else False
 
     @property
     def explanation(self):
         return f'\n\n{BOOK} {self.answer["explanation"]}'
-
-    def selected_choice_str(self, selected_choice_id):
-        """Get user choice with correct/incorrect mark."""
-        selected_choice = self.user_choice_str(selected_choice_id)
-        return f'{self.get_mark()} {self._get_user_choice(selected_choice)}'
-
-    @staticmethod
-    def _get_user_choice(selected_choice):
-        return f'{YOUR_CHOICE_B} {selected_choice}'
-
-    def user_choice_str(self, selected_choice_id):
-        [selected_choice] = [
-            choice['content']
-            for choice in self.answer['choices']
-            if choice['id'] == selected_choice_id
-        ]
-        return selected_choice
 
     def _get_marked_choices_str(self):
         choices_string = '\n'.join(
@@ -197,12 +181,8 @@ class TelegramAnswer:
         )
         return choices_string
 
-    @staticmethod
-    def _extract_question_str(message_text):
-        question = message_text.split(f'{CHOICES_AVAILABLE_B}')[0]
-        return question
-
-    def get_mark(self):
+    @property
+    def mark(self):
         return CHECK_MARK_BUTTON if self.is_correct is True else CROSS_MARK
 
     @staticmethod
