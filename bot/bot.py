@@ -82,7 +82,8 @@ def render_answer(update, answer, is_verified=False, is_explained=False):
     if answer.image:
         update.callback_query.edit_message_caption(
             caption=f'{msg_str}',
-            reply_markup=markup
+            reply_markup=markup,
+            parse_mode=ParseMode.MARKDOWN,
         )
     else:
         update.callback_query.edit_message_text(
