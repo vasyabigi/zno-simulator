@@ -5,7 +5,7 @@ import requests
 
 from constants import (QUESTION_URL, ANSWER_URL, CHECK_MARK_BUTTON, CHECK_MARK_BLACK, CROSS_MARK,
                        CROSS_MARK_BLACK, QUESTION_MARK, INDEX_POINTING_RIGHT, BOOK,
-                       CHOICES_AVAILABLE_B, YOUR_CHOICE_B)
+                       CHOICES_AVAILABLE_B, YOUR_CHOICE_B, CORRECT_ANSWER_B)
 
 logger = logging.getLogger(__name__)
 
@@ -61,13 +61,14 @@ class TelegramQuestion:
 
     @property
     def content(self):
-        return f'{QUESTION_MARK} {self.question["content"]}\n\n'
+        return f'{QUESTION_MARK} {self.question["content"]}'
 
+    @property
     def choices_str(self):
         choices_str = '\n'.join(
             f'- {choice["content"]}' for choice in self.choices
         )
-        return f'{INDEX_POINTING_RIGHT} {CHOICES_AVAILABLE_B}\n{choices_str}'
+        return f'\n\n{INDEX_POINTING_RIGHT} {CHOICES_AVAILABLE_B}\n{choices_str}'
 
 
 class TelegramAnswer:
@@ -88,8 +89,13 @@ class TelegramAnswer:
         ]
 
     @property
+    def correct_answer_str(self):
+        [correct_choice] = [c['content'] for c in self.choices if c['is_correct']]
+        return f'\n\n{CHECK_MARK_BUTTON} {CORRECT_ANSWER_B} {correct_choice}'
+
+    @property
     def content(self):
-        return f'{QUESTION_MARK} {self.answer["content"]}\n\n'
+        return f'\n\n{QUESTION_MARK} {self.answer["content"]}'
 
     def choices_str(self, verified=False):
         if verified:
@@ -98,7 +104,7 @@ class TelegramAnswer:
             choices_str = '\n'.join(
                 f'- {choice["content"]}' for choice in self.choices
             )
-        return f'{INDEX_POINTING_RIGHT} {CHOICES_AVAILABLE_B}\n{choices_str}'
+        return f'\n\n{INDEX_POINTING_RIGHT} {CHOICES_AVAILABLE_B}\n{choices_str}'
 
     @property
     def has_explanation(self):
@@ -112,7 +118,7 @@ class TelegramAnswer:
     def selected_choice_str(self, selected_choice_id):
         """Get user choice with correct/incorrect mark."""
         selected_choice = self.user_choice_str(selected_choice_id)
-        return f'{self.mark} {self._get_user_choice(selected_choice)}'
+        return f'\n\n{self.mark} {self._get_user_choice(selected_choice)}'
 
     @staticmethod
     def _get_user_choice(selected_choice):

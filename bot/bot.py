@@ -61,46 +61,44 @@ def get_subject_code(context):
             return key
 
 
-def render_answer(update, answer, is_verified=False, is_explained=False):
-    question_str = answer.content if not answer.image else ''
+def render_answer(update, answer, given_answer=False, is_verified=False, is_explained=False):
+    question_str = answer.content
     choices_str = answer.choices_str(verified=is_verified)
     data = json.loads(update.callback_query.data)
-
-    markup, msg_str = render_user_choice(answer, data, choices_str)
+    msg_str = ''
+    markup = None
 
     if is_explained:
-        markup = None
-        msg_str = f'{msg_str} {answer.explanation}'
+        msg_str = answer.correct_answer_str + answer.explanation
 
     if is_verified and not is_explained:
         markup = render_show_explanation(update, data, answer)
+        msg_str = answer.correct_answer_str
+
+    if given_answer:
+        markup, msg_str = render_user_choice(answer, data)
+
+    msg_text = f'{question_str} {choices_str} {msg_str}'
 
     # avoid redundant update in case of the same wrong choice
-    if message_not_modified(update, msg_str, question_str, choices_str):
+    if msg_text == update.callback_query.message.text_markdown:
         return
 
     if answer.image:
         update.callback_query.edit_message_caption(
-            caption=f'{msg_str}',
+            caption=msg_text,
             reply_markup=markup,
             parse_mode=ParseMode.MARKDOWN,
         )
     else:
         update.callback_query.edit_message_text(
-            text=f'{question_str} {msg_str}',
+            text=msg_text,
             reply_markup=markup,
             parse_mode=ParseMode.MARKDOWN,
         )
 
 
-def message_not_modified(update, msg_str, question_str, choices_str):
-    current_text = update.callback_query.message.text_markdown
-    if f'{question_str} {msg_str}' == current_text or \
-       f'{choices_str} {msg_str}' == current_text:
-        return True
-
-
-def render_user_choice(answer, data, choices_str):
+def render_user_choice(answer, data):
     if answer.is_correct:
         answ_str = CORRECT_CHOICE_STR
         keyboard = [[
@@ -116,7 +114,7 @@ def render_user_choice(answer, data, choices_str):
                 get_inline_button(SHOW_ANSWER, {**data, **{'action': 'cor'}})
             ],
         ]
-    msg_str = choices_str + answ_str.format(answer.selected_choice_str(data["c_id"]))
+    msg_str = answ_str.format(answer.selected_choice_str(data["c_id"]))
     markup = InlineKeyboardMarkup(keyboard)
     return markup, msg_str
 
@@ -141,22 +139,23 @@ def apply_send_answer(update):
     is_correct = answer.is_correct
 
     if is_correct:
-        render_answer(update, answer, is_verified=True)
+        render_answer(update, answer, given_answer=True, is_verified=True)
     else:
-        render_answer(update, answer, is_verified=False)
+        render_answer(update, answer, given_answer=True, is_verified=False)
 
 
 def apply_show_correct_answer(update):
     data = json.loads(update.callback_query.data)
 
     answer = post_answer(data['q_id'], data['c_id'])
-    render_answer(update, answer, is_verified=True)
+    render_answer(update, answer, given_answer=False, is_verified=True)
 
 
 def apply_show_explanation(update):
     data = json.loads(update.callback_query.data)
 
     answer = post_answer(data['q_id'], data['c_id'])
+    # TODO we still have 'c_id', shoud we show both correct answer and user's answer?
     render_answer(update, answer, is_verified=True, is_explained=True)
 
 
@@ -184,13 +183,13 @@ def handle_get(update, context):
     if question.image:
         update.message.reply_photo(
             photo=question.image,
-            caption=question.choices_str(),
+            caption=question.content + question.choices_str,
             reply_markup=markup,
             parse_mode=ParseMode.MARKDOWN
         )
     else:
         update.message.reply_text(
-            question.content + question.choices_str(),
+            question.content + question.choices_str,
             reply_markup=markup,
             parse_mode=ParseMode.MARKDOWN
         )
