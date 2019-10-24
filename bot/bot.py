@@ -178,7 +178,7 @@ def handle_button(update, context):
 def handle_get(update, context):
     """Send user a question and answers options keyboard."""
     subject = get_subject_code(context)
-    question = get_question(subject=subject)
+    question = get_question(subject='ukr')
     markup = InlineKeyboardMarkup.from_row(get_choices_buttons(question))
     if question.image:
         update.message.reply_photo(
@@ -220,7 +220,8 @@ def handle_error(update, context):
 
 
 def configure_telegram(subject='ukr'):
-    updater = Updater(config.telegram_tokens[subject], use_context=True)
+    updater = Updater('868338601:AAHan9WVG5cBLx7gFn1_1GLyS4qMEo4XEjA', use_context=True)
+    # updater = Updater(config.telegram_tokens[subject], use_context=True)
 
     updater.dispatcher.add_handler(CommandHandler('start', handle_start))
     updater.dispatcher.add_handler(MessageHandler(Filters.regex(f'^({START})$'), handle_start))

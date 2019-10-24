@@ -95,7 +95,7 @@ class TelegramAnswer:
 
     @property
     def content(self):
-        return f'\n\n{QUESTION_MARK} {self.answer["content"]}'
+        return f'{QUESTION_MARK} {self.answer["content"]}'
 
     def choices_str(self, verified=False):
         if verified:
