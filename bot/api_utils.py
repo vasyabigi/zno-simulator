@@ -61,7 +61,7 @@ class TelegramQuestion:
 
     @property
     def content(self):
-        return f'{QUESTION_MARK} {self.question["content"]}'
+        return f'{QUESTION_MARK} {self.question["content"]}' if self.question["content"] else ''
 
     @property
     def choices_str(self):
@@ -95,7 +95,7 @@ class TelegramAnswer:
 
     @property
     def content(self):
-        return f'{QUESTION_MARK} {self.answer["content"]}'
+        return f'{QUESTION_MARK} {self.answer["content"]}' if self.answer["content"] else ''
 
     def choices_str(self, verified=False):
         if verified:
