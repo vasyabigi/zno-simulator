@@ -1,11 +1,12 @@
 import json
 import logging
+from functools import wraps
 
 from telegram import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
-    ReplyKeyboardMarkup
-)
+    ReplyKeyboardMarkup,
+    ChatAction)
 from telegram.ext import (
     Updater,
     CommandHandler,
@@ -22,6 +23,18 @@ from constants import (START, EXPLANATION_STR, QUESTION, QUESTION_BOOKS, GREETIN
 
 logging.basicConfig(level=logging.INFO, style='{')
 logger = logging.getLogger('zno_bot_ukrainian')
+
+
+def send_typing_action(func):
+    """Sends typing action while processing func command."""
+
+    @wraps(func)
+    def command_func(update, context, *args, **kwargs):
+        context.bot.send_chat_action(chat_id=update.effective_message.chat_id,
+                                     action=ChatAction.TYPING)
+        return func(update, context, *args, **kwargs)
+
+    return command_func
 
 
 def get_choices_buttons(question):
@@ -41,6 +54,7 @@ def get_inline_button(text, callback_data):
     )
 
 
+@send_typing_action
 def handle_start(update, context):
     """Displaying the starting message when bot starts."""
     markup = ReplyKeyboardMarkup(
@@ -159,6 +173,7 @@ SUPPORTED_ACTIONS = {
 }
 
 
+@send_typing_action
 def handle_button(update, context):
     """Handle button click."""
     callback_data = json.loads(update.callback_query.data)
@@ -168,6 +183,7 @@ def handle_button(update, context):
     apply_action(update)
 
 
+@send_typing_action
 def handle_get(update, context):
     """Send user a question and answers options keyboard."""
     subject = get_subject_code(context)
@@ -188,6 +204,7 @@ def handle_get(update, context):
         )
 
 
+@send_typing_action
 def handle_help(update, context):
     """Show short help message with list of available commands."""
     logger.info('User {} - {} got help'.format(
@@ -200,6 +217,7 @@ def handle_help(update, context):
     )
 
 
+@send_typing_action
 def handle_error(update, context):
     """Log Errors caused by Updates."""
     logger.warning('Update {} caused error {}'.format(update, context.error))
@@ -216,7 +234,7 @@ def configure_telegram(subject='ukr'):
     updater = Updater(config.telegram_tokens[subject], use_context=True)
 
     updater.dispatcher.add_handler(CommandHandler('start', handle_start))
-    updater.dispatcher.add_handler(MessageHandler(Filters.regex(f'^({START})$'), handle_start))
+    updater.dispatcher.add_handler(MessageHandler(Filters.regex(f'^(?i)({START})$'), handle_start))
 
     updater.dispatcher.add_handler(CommandHandler('get', handle_get))
     updater.dispatcher.add_handler(
@@ -224,7 +242,7 @@ def configure_telegram(subject='ukr'):
     )
 
     updater.dispatcher.add_handler(CommandHandler('help', handle_help))
-    updater.dispatcher.add_handler(MessageHandler(Filters.regex(f'^({HELP})$'), handle_help))
+    updater.dispatcher.add_handler(MessageHandler(Filters.regex(f'^(?i)({HELP})$'), handle_help))
     updater.dispatcher.add_handler(CallbackQueryHandler(handle_button))
 
     updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_start))
