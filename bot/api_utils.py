@@ -121,7 +121,7 @@ class TelegramAnswer:
         selected_choice = self.user_choice_str(selected_choice_id)
         mark = CHECK_MARK_BUTTON if self.is_correct is True else CROSS_MARK
         answer_str = CORRECT_CHOICE_STR if self.is_correct is True else INCORRECT_CHOICE_STR
-        return f'\n\n{mark} {self._get_user_choice(selected_choice)}\n{answer_str}'
+        return f'\n\n{mark} {self._get_user_choice(selected_choice)} {answer_str}'
 
     @staticmethod
     def _get_user_choice(selected_choice):

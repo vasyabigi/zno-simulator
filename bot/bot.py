@@ -69,20 +69,18 @@ def render_answer(update, answer, given_answer=False, is_verified=False, is_expl
     markup = None
 
     if is_explained:
-        msg_str = answer.correct_answer_str + answer.explanation
+        msg_str = answer.correct_answer_str + \
+                  answer.selected_choice_str(data['c_id']) + answer.explanation
 
     if is_verified and not is_explained:
-        markup = render_show_explanation(update, data, answer)
-        msg_str = answer.correct_answer_str
-
-    # if given_answer:
-    #     markup, msg_str = render_user_choice(update, data, answer)
+        markup = render_show_explanation(data, answer)
+        msg_str = answer.correct_answer_str + answer.selected_choice_str(data['c_id'])
 
     if given_answer:
         msg_str = answer.selected_choice_str(data['c_id'])
 
         if answer.is_correct:
-            markup = render_show_explanation(update, data, answer)
+            markup = render_show_explanation(data, answer)
         else:
             markup = render_choice_buttons(data, answer)
 
@@ -118,15 +116,11 @@ def render_choice_buttons(data, answer):
     return markup
 
 
-def render_show_explanation(update, data, answer):
+def render_show_explanation(data, answer):
     markup = None
     if answer.has_explanation:
         markup = InlineKeyboardMarkup.from_button(
-            get_inline_button(EXPLANATION_STR, {**data,
-                                                **{'action': 'exp'},
-                                                **{'m_id': update.effective_message.message_id}
-                                                }
-                              )
+            get_inline_button(EXPLANATION_STR, {**data, **{'action': 'exp'}})
         )
     return markup
 
