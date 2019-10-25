@@ -18,7 +18,7 @@ from telegram.parsemode import ParseMode
 import config
 from api_utils import get_question, post_answer
 from constants import (START, EXPLANATION_STR, QUESTION, QUESTION_BOOKS, GREETING_STR, HELP,
-                       SORRY_ERROR, SHOW_ANSWER, HELP_STR, CORRECT_CHOICE_STR, INCORRECT_CHOICE_STR)
+                       SORRY_ERROR, SHOW_ANSWER, HELP_STR)
 
 logging.basicConfig(level=logging.INFO, style='{')
 logger = logging.getLogger('zno_bot_ukrainian')
@@ -75,13 +75,21 @@ def render_answer(update, answer, given_answer=False, is_verified=False, is_expl
         markup = render_show_explanation(update, data, answer)
         msg_str = answer.correct_answer_str
 
-    if given_answer:
-        markup, msg_str = render_user_choice(update, data, answer)
+    # if given_answer:
+    #     markup, msg_str = render_user_choice(update, data, answer)
 
-    msg_text = f'{question_str} {choices_str} {msg_str}'
+    if given_answer:
+        msg_str = answer.selected_choice_str(data['c_id'])
+
+        if answer.is_correct:
+            markup = render_show_explanation(update, data, answer)
+        else:
+            markup = render_choice_buttons(data, answer)
 
     # avoid redundant update in case of the same wrong choice
-    if msg_text == update.callback_query.message.text_markdown:
+    msg_text = f'{question_str} {choices_str} {msg_str}'
+    if msg_text.strip() in (update.callback_query.message.text_markdown,
+                            update.callback_query.message.caption_markdown):
         return
 
     if answer.image:
@@ -98,24 +106,16 @@ def render_answer(update, answer, given_answer=False, is_verified=False, is_expl
         )
 
 
-def render_user_choice(update, data, answer):
-    # if answer.is_correct and answer.has_explanation:
-    if answer.is_correct:
-        answ_str = CORRECT_CHOICE_STR
-        markup = render_show_explanation(update, data, answer)
-    else:
-        answ_str = INCORRECT_CHOICE_STR
-        markup = InlineKeyboardMarkup([
-            list(
-                get_choices_buttons(answer)
-            ),
-            [
-                get_inline_button(SHOW_ANSWER, {**data, **{'action': 'cor'}})
-            ],
-        ])
-    # TODO move to TelegramAnswer
-    msg_str = answ_str.format(answer.selected_choice_str(data["c_id"]))
-    return markup, msg_str
+def render_choice_buttons(data, answer):
+    markup = InlineKeyboardMarkup([
+        list(
+            get_choices_buttons(answer)
+        ),
+        [
+            get_inline_button(SHOW_ANSWER, {**data, **{'action': 'cor'}})
+        ],
+    ])
+    return markup
 
 
 def render_show_explanation(update, data, answer):
@@ -234,7 +234,7 @@ def configure_telegram(subject='ukr'):
     updater.dispatcher.add_handler(CallbackQueryHandler(handle_button))
 
     updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_start))
-    # updater.dispatcher.add_error_handler(handle_error)
+    updater.dispatcher.add_error_handler(handle_error)
     return updater
 
 
