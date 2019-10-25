@@ -76,7 +76,7 @@ def render_answer(update, answer, given_answer=False, is_verified=False, is_expl
         msg_str = answer.correct_answer_str
 
     if given_answer:
-        markup, msg_str = render_user_choice(answer, data)
+        markup, msg_str = render_user_choice(update, data, answer)
 
     msg_text = f'{question_str} {choices_str} {msg_str}'
 
@@ -98,24 +98,23 @@ def render_answer(update, answer, given_answer=False, is_verified=False, is_expl
         )
 
 
-def render_user_choice(answer, data):
+def render_user_choice(update, data, answer):
+    # if answer.is_correct and answer.has_explanation:
     if answer.is_correct:
         answ_str = CORRECT_CHOICE_STR
-        keyboard = [[
-            get_inline_button(EXPLANATION_STR, {**data, **{'action': 'exp'}})
-        ]]
+        markup = render_show_explanation(update, data, answer)
     else:
         answ_str = INCORRECT_CHOICE_STR
-        keyboard = [
+        markup = InlineKeyboardMarkup([
             list(
                 get_choices_buttons(answer)
             ),
             [
                 get_inline_button(SHOW_ANSWER, {**data, **{'action': 'cor'}})
             ],
-        ]
+        ])
+    # TODO move to TelegramAnswer
     msg_str = answ_str.format(answer.selected_choice_str(data["c_id"]))
-    markup = InlineKeyboardMarkup(keyboard)
     return markup, msg_str
 
 
@@ -178,7 +177,7 @@ def handle_button(update, context):
 def handle_get(update, context):
     """Send user a question and answers options keyboard."""
     subject = get_subject_code(context)
-    question = get_question(subject='ukr')
+    question = get_question(subject=subject)
     markup = InlineKeyboardMarkup.from_row(get_choices_buttons(question))
     if question.image:
         update.message.reply_photo(
@@ -220,8 +219,7 @@ def handle_error(update, context):
 
 
 def configure_telegram(subject='ukr'):
-    updater = Updater('868338601:AAHan9WVG5cBLx7gFn1_1GLyS4qMEo4XEjA', use_context=True)
-    # updater = Updater(config.telegram_tokens[subject], use_context=True)
+    updater = Updater(config.telegram_tokens[subject], use_context=True)
 
     updater.dispatcher.add_handler(CommandHandler('start', handle_start))
     updater.dispatcher.add_handler(MessageHandler(Filters.regex(f'^({START})$'), handle_start))
