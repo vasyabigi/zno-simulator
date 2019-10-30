@@ -7,3 +7,18 @@ This project consists of 3 parts:
 * [Parser](/content) - scrape, parse, and convert ZNO questions from zno.osvita.ua.
 
 Dive into each of them to get more details.
+
+
+### Code Style
+
+To ensure a standardized code style we use the formatter [black](https://github.com/ambv/black).
+
+If you want to automatically format your code on every commit, you can use [pre-commit](https://pre-commit.com/).
+Just install it via `pip install pre-commit` and execute `pre-commit install` in the root folder.
+This will add a hook to the repository, which reformats files on every commit.
+
+If you want to set it up manually, install black via `pip install black`.
+To reformat files execute
+```
+black .
+```
