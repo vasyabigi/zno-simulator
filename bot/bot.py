@@ -17,7 +17,8 @@ from telegram.ext import (
 from telegram.parsemode import ParseMode
 
 import config
-from api_utils import get_question, post_answer
+from api_utils import get_question, post_answer, get_subject_code
+from amplitude import log_event
 from constants import (START, EXPLANATION_STR, QUESTION, QUESTION_BOOKS, GREETING_STR, HELP,
                        SORRY_ERROR, SHOW_ANSWER, HELP_STR)
 
@@ -66,13 +67,6 @@ def handle_start(update, context):
         reply_markup=markup,
         parse_mode=ParseMode.MARKDOWN
     )
-
-
-def get_subject_code(context):
-    # TODO: Fix the subject getter
-    for key, value in config.telegram_tokens.items():
-        if value == context.bot.token:
-            return key
 
 
 def render_answer(update, answer, given_answer=False, is_verified=False, is_explained=False):
@@ -139,26 +133,23 @@ def render_show_explanation(data, answer):
     return markup
 
 
-def apply_send_answer(update):
+@log_event("send_answer", keys=['is_correct'])
+def apply_send_answer(update, context):
     data = json.loads(update.callback_query.data)
-
     answer = post_answer(data['q_id'], data['c_id'])
-    is_correct = answer.is_correct
-
-    if is_correct:
-        render_answer(update, answer, given_answer=True, is_verified=True)
-    else:
-        render_answer(update, answer, given_answer=True, is_verified=False)
+    render_answer(update, answer, given_answer=True, is_verified=answer.is_correct)
+    return answer
 
 
-def apply_show_correct_answer(update):
+@log_event("show_correct_answer")
+def apply_show_correct_answer(update, context):
     data = json.loads(update.callback_query.data)
-
     answer = post_answer(data['q_id'], data['c_id'])
     render_answer(update, answer, given_answer=False, is_verified=True)
 
 
-def apply_show_explanation(update):
+@log_event("show_explanation")
+def apply_show_explanation(update, context):
     data = json.loads(update.callback_query.data)
 
     answer = post_answer(data['q_id'], data['c_id'])
@@ -180,9 +171,10 @@ def handle_button(update, context):
     # Select action:
     apply_action = SUPPORTED_ACTIONS[callback_data['action']]
     # Apply action:
-    apply_action(update)
+    apply_action(update, context)
 
 
+@log_event("get_random_question")
 @send_typing_action
 def handle_get(update, context):
     """Send user a question and answers options keyboard."""
