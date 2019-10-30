@@ -5,7 +5,8 @@ import requests
 
 from constants import (QUESTION_URL, ANSWER_URL, CHECK_MARK_BUTTON, CHECK_MARK_BLACK, CROSS_MARK,
                        CROSS_MARK_BLACK, QUESTION_MARK, INDEX_POINTING_RIGHT, BOOK,
-                       CHOICES_AVAILABLE_B, YOUR_CHOICE_B, CORRECT_ANSWER_B)
+                       CHOICES_AVAILABLE_B, YOUR_CHOICE_B, CORRECT_ANSWER_B, CORRECT_CHOICE_STR,
+                       INCORRECT_CHOICE_STR)
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +51,7 @@ class TelegramQuestion:
         self.question = json.loads(question_data)
         self.q_id = self.question['id']
         self.choices = self.question['choices']
+        self.image = self.question.get('image')
 
     @property
     def choices_letters(self):
@@ -58,12 +60,16 @@ class TelegramQuestion:
             for choice in self.choices
         ]
 
-    def get_string(self):
+    @property
+    def content(self):
+        return f'{QUESTION_MARK} {self.question["content"]}' if self.question["content"] else ''
+
+    @property
+    def choices_str(self):
         choices_str = '\n'.join(
             f'- {choice["content"]}' for choice in self.choices
         )
-        return f'{QUESTION_MARK} {self.question["content"]}\n\n{INDEX_POINTING_RIGHT} ' \
-               f'{CHOICES_AVAILABLE_B}\n{choices_str}'
+        return f'\n\n{INDEX_POINTING_RIGHT} {CHOICES_AVAILABLE_B}\n{choices_str}'
 
 
 class TelegramAnswer:
@@ -71,31 +77,57 @@ class TelegramAnswer:
 
     def __init__(self, answer_data):
         self.answer = json.loads(answer_data)
-
-    def has_explanation(self):
-        # TBD: Remove None from parsed content
-        return self.answer['explanation'] and self.answer['explanation'] != 'None'
-
-    def explanation(self, text_markdown):
-        return f'{text_markdown}\n\n{BOOK} {self.answer["explanation"]}'
+        self.is_correct = self.answer['is_correct']
+        self.q_id = self.answer['id']
+        self.choices = self.answer['choices']
+        self.image = self.answer.get('image')
 
     @property
-    def is_correct(self):
-        return self.answer['is_correct']
+    def choices_letters(self):
+        return [
+            f'{choice["content"].split(":")[0].strip("*")}'
+            for choice in self.choices
+        ]
 
-    def get_selected_choice(self, message_text, selected_choice_id):
+    @property
+    def correct_answer_str(self):
+        [correct_choice] = [c['content'] for c in self.choices if c['is_correct']]
+        return f'\n\n{CHECK_MARK_BUTTON} {CORRECT_ANSWER_B} {correct_choice}'
+
+    @property
+    def content(self):
+        return f'{QUESTION_MARK} {self.answer["content"]}' if self.answer["content"] else ''
+
+    def choices_str(self, verified=False):
+        if verified:
+            choices_str = self._get_marked_choices_str()
+        else:
+            choices_str = '\n'.join(
+                f'- {choice["content"]}' for choice in self.choices
+            )
+        return f'\n\n{INDEX_POINTING_RIGHT} {CHOICES_AVAILABLE_B}\n{choices_str}'
+
+    @property
+    def has_explanation(self):
+        # TBD: Remove None from parsed content
+        return True if self.answer['explanation'] else False
+
+    @property
+    def explanation(self):
+        return f'\n\n{BOOK} {self.answer["explanation"]}'
+
+    def selected_choice_str(self, selected_choice_id):
         """Get user choice with correct/incorrect mark."""
-        selected_choice = self.selected_choice_str(selected_choice_id)
-        message_text = message_text.split(f'\n\n{CROSS_MARK}')[0]
-        return (
-            f'{message_text}\n\n{self.get_mark()} {self._get_user_choice(selected_choice)}'
-        )
+        selected_choice = self.user_choice_str(selected_choice_id)
+        mark = CHECK_MARK_BUTTON if self.is_correct is True else CROSS_MARK
+        answer_str = CORRECT_CHOICE_STR if self.is_correct is True else INCORRECT_CHOICE_STR
+        return f'\n\n{mark} {self._get_user_choice(selected_choice)} {answer_str}'
 
     @staticmethod
     def _get_user_choice(selected_choice):
         return f'{YOUR_CHOICE_B} {selected_choice}'
 
-    def selected_choice_str(self, selected_choice_id):
+    def user_choice_str(self, selected_choice_id):
         [selected_choice] = [
             choice['content']
             for choice in self.answer['choices']
@@ -103,45 +135,12 @@ class TelegramAnswer:
         ]
         return selected_choice
 
-    def get_verified_question(self, message_text, selected_choice_id):
-        """Get question with marked choices and marked user answer."""
-        question = self._extract_question_str(message_text)
-        choices_string = self._get_marked_choices_str()
-
-        selected_choice = self.selected_choice_str(selected_choice_id)
-        return (
-            f'{question}{CHOICES_AVAILABLE_B}\n{choices_string}\n\n{self.get_mark()} '
-            f'{self._get_user_choice(selected_choice)}'
-        )
-
     def _get_marked_choices_str(self):
         choices_string = '\n'.join(
             f'{self.get_black_mark(choice)} {choice["content"]}'
             for choice in self.answer["choices"]
         )
         return choices_string
-
-    def get_verified_answer(self, message_text):
-        """Get question with marked choices and correct answer."""
-        question = self._extract_question_str(message_text)
-        choices_string = self._get_marked_choices_str()
-        [correct_choice] = [
-            choice['content']
-            for choice in self.answer['choices']
-            if choice['is_correct'] is True
-        ]
-        return (
-            f'{question}{CHOICES_AVAILABLE_B}\n{choices_string}\n\n{CHECK_MARK_BUTTON} '
-            f'{CORRECT_ANSWER_B} {correct_choice}'
-        )
-
-    @staticmethod
-    def _extract_question_str(message_text):
-        question = message_text.split(f'{CHOICES_AVAILABLE_B}')[0]
-        return question
-
-    def get_mark(self):
-        return CHECK_MARK_BUTTON if self.is_correct is True else CROSS_MARK
 
     @staticmethod
     def get_black_mark(choice):
