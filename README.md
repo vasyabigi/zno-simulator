@@ -2,7 +2,8 @@ ZNO Simulator project
 =======================
 
 This project consists of 3 parts:
-* [RESTful API](/api) - serves the ZNO quiz APIs;
+* [RESTful API](/api_service) - serves the ZNO quiz APIs;
+* [Landing page](/landing_page_service) - serves the landing page of ZNO bots;
 * [Telegram Bot](/bots/telegram_bot) - client to process ZNO API for Telegram bot;
 * [Zno Parser](/zno_parser) - scrape, parse, and convert ZNO questions from zno.osvita.ua.
 
