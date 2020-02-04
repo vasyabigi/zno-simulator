@@ -10,6 +10,7 @@ provider:
     TELEGRAM_TOKENS: ${${self:custom.config}:TELEGRAM_TOKENS}
     API_ROOT: ${${self:custom.config}:API_ROOT}
     SENTRY_DSN: ${${self:custom.config}:SENTRY_DSN}
+    AMPLITUDE_API_KEY: ${${self:custom.config}:AMPLITUDE_API_KEY}
 
 functions:
   webhook:

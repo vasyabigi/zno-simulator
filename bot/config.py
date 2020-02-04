@@ -6,3 +6,4 @@ telegram_tokens = json.loads(os.getenv("TELEGRAM_TOKENS", '{"ukr": "746733366:AA
 api_root = os.getenv("API_ROOT", "http://zno-dev.eu-central-1.elasticbeanstalk.com")
 sentry_dsn = os.getenv("SENTRY_DSN", None)
 stage = os.getenv("STAGE")
+amplitude_api_key = os.getenv("AMPLITUDE_API_KEY", None)

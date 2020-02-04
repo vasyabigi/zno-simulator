@@ -2,6 +2,7 @@ import json
 import logging
 
 import requests
+import config
 
 from constants import (QUESTION_URL, ANSWER_URL, CHECK_MARK_BUTTON, CHECK_MARK_BLACK, CROSS_MARK,
                        CROSS_MARK_BLACK, QUESTION_MARK, INDEX_POINTING_RIGHT, BOOK,
@@ -145,3 +146,10 @@ class TelegramAnswer:
     @staticmethod
     def get_black_mark(choice):
         return CHECK_MARK_BLACK if choice['is_correct'] is True else CROSS_MARK_BLACK
+
+
+def get_subject_code(context):
+    # TODO: Fix the subject getter
+    for key, value in config.telegram_tokens.items():
+        if value == context.bot.token:
+            return key
