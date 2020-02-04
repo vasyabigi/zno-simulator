@@ -84,7 +84,7 @@ async def parse_subject(session, subject_data):
 
     # Save questions to local folder
     code = SUBJECTS_TO_CODES[subject_title]
-    with open(f"content/data/{code}.json", "w") as f:
+    with open(f"zno_parser/data/{code}.json", "w") as f:
         json.dump(subject_questions, f)
 
     return subject_questions
@@ -144,7 +144,7 @@ async def get_osvita_ua_questions():
         questions = []
 
         for code in SUBJECTS_TO_CODES.values():
-            with open(f"content/data/{code}.json", "r") as f:
+            with open(f"zno_parser/data/{code}.json", "r") as f:
                 questions.extend(json.loads(f.read()))
 
         return questions
