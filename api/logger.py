@@ -2,7 +2,7 @@
 import logging.config
 
 
-logging.config.fileConfig('log.conf')
+logging.config.fileConfig("log.conf")
 
 
 def getLogger(name):
