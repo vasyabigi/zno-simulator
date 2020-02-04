@@ -30,7 +30,7 @@ jobs:
           name: Run Black
           command: |
             . venv/bin/activate
-            black --check .
+            black --check . --exclude venv
       - store_artifacts:
           path: test-reports
           destination: test-reports
