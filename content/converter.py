@@ -60,8 +60,8 @@ class QuestionConverter:
             data = question_converter.to_internal()
             questions.append(data)
 
-            per_subject.setdefault(data['subject'], 0)
-            per_subject[data['subject']] += 1
+            per_subject.setdefault(data["subject"], 0)
+            per_subject[data["subject"]] += 1
 
         for subject, value in per_subject.items():
             print(f"Converted {value} {subject} questions.")

@@ -12,28 +12,28 @@ from api_resources import QuestionsResource, AnswersResource, RandomQuestionReso
 sentry_sdk.init(
     dsn=os.getenv("SENTRY_DSN"),
     environment=os.getenv("STAGE"),
-    integrations=[FalconIntegration()]
+    integrations=[FalconIntegration()],
 )
 
 
 def handle_404(req, resp):
     """Handle any request if there is no matching resource."""
     resp.status = falcon.HTTP_404
-    resp.body = 'Not found'
+    resp.body = "Not found"
 
 
 class HealthCheckResource:
     def on_get(self, request, response):
-        body = {'data': {'status': 'ok'}}
+        body = {"data": {"status": "ok"}}
         response.body = json.dumps(body)
 
 
 application = falcon.API()
-application.add_route('/questions/random', RandomQuestionResource())
-application.add_route('/questions/{question_id}', QuestionsResource())
-application.add_route('/questions/{question_id}/answers', AnswersResource())
-application.add_route('/', HealthCheckResource())
-application.add_sink(handle_404, '')
+application.add_route("/questions/random", RandomQuestionResource())
+application.add_route("/questions/{question_id}", QuestionsResource())
+application.add_route("/questions/{question_id}/answers", AnswersResource())
+application.add_route("/", HealthCheckResource())
+application.add_sink(handle_404, "")
 
-log = logger.getLogger('root')
-log.info('ZNO API is running')
+log = logger.getLogger("root")
+log.info("ZNO API is running")
