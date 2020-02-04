@@ -16,3 +16,5 @@ node_modules
 questions.json
 raw_questions.json
 zno_parser/data
+api_service/questions.json
+venv
