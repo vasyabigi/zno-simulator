@@ -49,7 +49,7 @@ jobs:
           command: |
             . venv/bin/activate
             pip install awsebcli
-            cd api
+            cd api_service
             mkdir .elasticbeanstalk
             cp elasticbeanstalk.yml .elasticbeanstalk/config.yml
             eb deploy zno-dev
