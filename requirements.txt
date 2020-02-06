@@ -1,5 +1,6 @@
 -r api_service/requirements.txt
 -r bots/telegram_bot/requirements.txt
 -r zno_parser/requirements.txt
+-r bots/viber_bot/requirements.txt
 flake8==3.7.8
 black==19.10b0
