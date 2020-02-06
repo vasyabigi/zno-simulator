@@ -7,22 +7,29 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='ZNOSubject',
+            name="ZNOSubject",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('subject_title', models.CharField(max_length=50)),
-                ('subject_description', models.TextField(max_length=1000)),
-                ('telegram_bot_name', models.CharField(default='', max_length=50)),
-                ('viber_bot_name', models.CharField(default='', max_length=50)),
-                ('messenger_bot_name', models.CharField(default='', max_length=50)),
-                ('whatsapp_bot_name', models.CharField(default='', max_length=50)),
-                ('is_active_s', models.BooleanField(default=False)),
-                ('subject_other', models.TextField(default='', max_length=1000)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("subject_title", models.CharField(max_length=50)),
+                ("subject_description", models.TextField(max_length=1000)),
+                ("telegram_bot_name", models.CharField(default="", max_length=50)),
+                ("viber_bot_name", models.CharField(default="", max_length=50)),
+                ("messenger_bot_name", models.CharField(default="", max_length=50)),
+                ("whatsapp_bot_name", models.CharField(default="", max_length=50)),
+                ("is_active_s", models.BooleanField(default=False)),
+                ("subject_other", models.TextField(default="", max_length=1000)),
             ],
         ),
     ]
