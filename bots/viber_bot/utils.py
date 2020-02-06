@@ -1,7 +1,9 @@
 from requests import get
 import json
 
-URL_WITH_QUESTION = "http://zno-dev.eu-central-1.elasticbeanstalk.com/questions/random?subject=ukr"
+URL_WITH_QUESTION = (
+    "http://zno-dev.eu-central-1.elasticbeanstalk.com/questions/random?subject=ukr"
+)
 
 
 def get_question():

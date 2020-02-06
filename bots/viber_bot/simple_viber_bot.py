@@ -11,6 +11,7 @@ import time
 import logging
 import sched
 import threading
+
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 handler = logging.StreamHandler()
@@ -25,6 +26,8 @@ viber = Api(
         auth_token="4b06e1adaee7d102-894f265bf82a4a6a-182b92de2f9e38ee",
     )
 )
+
+
 @app.route("/", methods=["POST"])
 def incoming():
     logger.debug("received request. post data: {0}".format(request.get_data()))
@@ -46,10 +49,14 @@ def incoming():
             "client failed receiving message. failure: {0}".format(viber_request)
         )
     return Response(status=200)
+
+
 @app.route("/set-webhook", methods=["GET"])
 def register_webhook():
-    viber.set_webhook(request.args['url'])
+    viber.set_webhook(request.args["url"])
     logger.info(f"Webhook set to: {request.args['url']}")
     return Response(status=200)
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8001, debug=True)

@@ -11,14 +11,14 @@ headers = {"X-Viber-Auth-Token": auth_token}
 
 sen = dict()
 
-sen['url'] = 'https://f2fec829.ngrok.io/'
-sen['event_types'] = [
-        "unsubscribed",
-        "conversation_started",
-        "message",
-        "seen",
-        "delivered",
-    ]
+sen["url"] = "https://f2fec829.ngrok.io/"
+sen["event_types"] = [
+    "unsubscribed",
+    "conversation_started",
+    "message",
+    "seen",
+    "delivered",
+]
 
 # sen - это body запроса для отправки к backend серверов viber
 # seen, delivered - можно убрать, но иногда маркетологи хотят знать,
