@@ -16,9 +16,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from core.views import landing_page_ZNOtask
+from core.views import landing_page_view
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", landing_page_ZNOtask),
+    path("", landing_page_view),
 ]

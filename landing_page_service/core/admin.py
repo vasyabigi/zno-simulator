@@ -5,14 +5,13 @@ from .models import ZNOSubject
 @admin.register(ZNOSubject)
 class ZNOSubjectModel(admin.ModelAdmin):
     list_display = (
-        "subject_title",
-        "subject_description",
+        "title",
+        "description",
         "telegram_bot_name",
         "viber_bot_name",
         "messenger_bot_name",
         "whatsapp_bot_name",
-        "is_active_subject",
-        "subject_other",
+        "is_active",
     )
-    list_editable = ("is_active_subject",)
-    sortable = "subject_title"
+    list_editable = ("is_active",)
+    sortable = "title"
