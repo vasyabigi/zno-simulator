@@ -6,4 +6,4 @@ from core.models import ZNOSubject
 def landing_page_view(request):
     subjects = ZNOSubject.objects.filter(is_active=True)
 
-    return render(request, "ZNOtask.html", context={"subjects": subjects,},)
+    return render(request, "landing_page.html", context={"subjects": subjects,},)
