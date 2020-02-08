@@ -1,12 +1,10 @@
-from requests import get
+import requests
 import json
 
-URL_WITH_QUESTION = (
-    "http://zno-dev.eu-central-1.elasticbeanstalk.com/questions/random?subject="
-)
+QUESTIONS_API_ROOT = "http://zno-dev.eu-central-1.elasticbeanstalk.com/questions"
 
 
-def get_question(predmet):
-    get_all_page = get(URL_WITH_QUESTION + predmet)
-    page_text = json.loads(get_all_page.content)
-    return page_text
+def get_question(subject):
+    get_all_page = requests.get(f"{QUESTIONS_API_ROOT}/random?subject={subject}")
+    get_dict_with_question = json.loads(get_all_page.content)
+    return get_dict_with_question
