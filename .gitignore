@@ -18,3 +18,7 @@ raw_questions.json
 zno_parser/data
 api_service/questions.json
 venv
+
+# Django stuff:
+db.sqlite3
+db.sqlite3-journal

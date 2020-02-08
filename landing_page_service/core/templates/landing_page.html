@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block html_title %}
+    {{block.super}}  - Subjects
+{% endblock html_title%}
+
+{% block content %}
+    <ul>
+        {% for subject in subjects %}
+        <li><strong>{{subject.title}}</strong></a>
+            {{subject.subject_description}}</br>
+            <p>List of bots: </p>
+            <ul>
+                <li><a href=https://t.me/{{subject.telegram_bot_name}} target="_blank">Telegram</a></li>
+                <li><a href=https://t.me/{{subject.viber_bot_name}} target="_blank">Viber</a></li>
+                <li><a href=https://t.me/{{subject.messenger_bot_name}} target="_blank">Messenger</a></li>
+                <li><a href=https://t.me/{{subject.whatsapp_bot_name}} target="_blank">Whatsapp</a></li>
+            </ul><hr/>
+        </li>
+        {% empty %}
+        <li>No subjects yet</li>
+        {% endfor %}
+    </ul>
+
+{% endblock content %}
