@@ -11,6 +11,7 @@ class ZNOSubjectModel(admin.ModelAdmin):
         "viber_bot_name",
         "messenger_bot_name",
         "whatsapp_bot_name",
+        "image_title",
         "is_active",
     )
     list_editable = ("is_active",)
