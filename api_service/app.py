@@ -5,6 +5,7 @@ import sentry_sdk
 import logger
 
 from sentry_sdk.integrations.falcon import FalconIntegration
+from falcon_cors import CORS
 
 from api_resources import QuestionsResource, AnswersResource, RandomQuestionResource
 
@@ -28,7 +29,8 @@ class HealthCheckResource:
         response.body = json.dumps(body)
 
 
-application = falcon.API()
+cors = CORS(allow_all_origins=True)
+application = falcon.API(middleware=[cors.middleware])
 application.add_route("/questions/random", RandomQuestionResource())
 application.add_route("/questions/{question_id}", QuestionsResource())
 application.add_route("/questions/{question_id}/answers", AnswersResource())

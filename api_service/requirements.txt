@@ -4,3 +4,4 @@ requests==2.22.0
 sentry-sdk==0.12.3
 python-dotenv==0.10.3
 waitress==1.4.3
+falcon-cors==1.1.7
