@@ -1,20 +1,128 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>
-        {% block html_title %}
-            ZNO
-        {% endblock html_title %}
+    <title>{% block html_title %}ZNObot{% endblock html_title %}
     </title>
-   
+    <link rel="stylesheet" href="{% static "style.css" %}">
+    <link href="{% static "fonts/stylesheet.css" %}" rel="stylesheet" type="text/css" />
+    
+    <link href="https://fonts.googleapis.com/css?family=Work+Sans&display=swap" rel="stylesheet">
 </head>
-<body>
 
+<body>
+    <section class="head" id="top">
+        <div class="wrapper wrapper--head">
+            <div class="nav">
+                <a href="#" class="nav__logo"><span class="logo__text">ZNO</span><img class="logo__icon"
+                        src="{% static "images/ZLogo 2.png" %}"><span class="logo__text">BOT</span></a> 
+                <div class="nav__buttons">
+                    <div class="button__text"> <a href="#usage">як користуватись?</a></div>
+                    <div class="button__text"><a href="#partners"> партнери</a></div>
+                    <a href="#bots"><button class="btn btn--nav"> вибрати бота</button></a>
+                </div>
+
+                <div id="app" class="nav__mobile">
+                    <div class="mobile__icon" v-on:click="ShowMenu = !ShowMenu"><svg class="svg__img"
+                            xmlns="http://www.w3.org/2000/svg" viewbox="0 0 128 128" width="66px" height="66px">
+                            <path class="filltest" fill="#10A6E6" d="M64 14A50 50 0 1 0 64 114A50 50 0 1 0 64 14Z" />
+                            <path fill="#444b54"
+                                d="M64,117c-29.2,0-53-23.8-53-53s23.8-53,53-53s53,23.8,53,53S93.2,117,64,117z M64,17c-25.9,0-47,21.1-47,47s21.1,47,47,47s47-21.1,47-47S89.9,17,64,17z" />
+                            <path fill="#444b54"
+                                d="M86.5 52h-45c-1.7 0-3-1.3-3-3s1.3-3 3-3h45c1.7 0 3 1.3 3 3S88.2 52 86.5 52zM86.5 67h-45c-1.7 0-3-1.3-3-3s1.3-3 3-3h45c1.7 0 3 1.3 3 3S88.2 67 86.5 67z" />
+                            <g>
+                                <path fill="#444b54"
+                                    d="M86.5,82h-45c-1.7,0-3-1.3-3-3s1.3-3,3-3h45c1.7,0,3,1.3,3,3S88.2,82,86.5,82z" />
+                            </g>
+                        </svg></div>
+                    <transition name="fade">
+                        <div class="mobile__menu" v-if="!ShowMenu">
+                            <div class="button__text"> <a href="#usage">як користуватись?</a></div>
+                            <div class="button__text"><a href="#partners"> партнери</a></div>
+                            <a href="#bots"><button class="btn btn--nav"> вибрати бота</button></a>
+                        </div>
+                    </transition>
+                </div>
+            </div>
+            <div class="head__title"> Я уже користуюсь ЗНО ботом, <span class="title__blue">а ти?</span></div>
+            <div class="head__subtitle">Не хочеш аби тебе послали в заслання? тоді мерщій проходити тести!</div>
+            <div class="button__wrapper">
+                <a href="#bots"><button class="btn btn--head">вибрати бота</button></a>
+                <div class="button__text button--blueback"><a href="#usage">як користуватись?</a></div>
+            </div>
+
+
+        </div>
+        <marquee behavior="scroll" direction="left" scrollamount="15">
+            <div class="ticker">а ти готовий до ЗНО? Готуйся разом з нами. ЗНО - це не страшно. Готуйся до ЗНО у своєму
+                гаджеті. Математика Фізика Хімія Українська мова Географія Історія України Біологія </div>
+        </marquee>
+    </section>
+
+    
     {% block content %}
     {% endblock content %}
   
+
+    <footer class="footer">
+        <div class="wrapper">
+            <div class="footer__partners" id="partners">
+                <div class="partners__title"> наші партнери</div>
+                <div class="partners__logos ">
+                    <div class="logos__item"><img class="item__image" src="{% static "images/Rectangle 108.png" %}"></div>
+                    <div class="logos__item"><img class="item__image" src="{% static "images/Rectangle 109.png" %}"></div>
+                    <div class="logos__item"><img class="item__image" src="{% static "images/rect3.png" %}"></div>
+                </div>
+
+
+            </div>
+        </div>
+        <div class="footer__buttons">
+            <div class="button__text"> <a class="white" href="#usage">як користуватись?</a></div>
+            <a href="#bots"><button class="btn__footer"> вибрати бота</button></a>
+            <a href="#top"><button class="button__up"><svg width="16" height="9" viewbox="0 0 16 9" fill="none"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M8.70711 0.292893C8.31658 -0.097631 7.68342 -0.097631 7.29289 0.292893L0.928932 6.65685C0.538408 7.04738 0.538408 7.68054 0.928932 8.07107C1.31946 8.46159 1.95262 8.46159 2.34315 8.07107L8 2.41421L13.6569 8.07107C14.0474 8.46159 14.6805 8.46159 15.0711 8.07107C15.4616 7.68054 15.4616 7.04738 15.0711 6.65685L8.70711 0.292893ZM9 2V1L7 1V2L9 2Z"
+                            fill="#288BFF" />
+                    </svg>
+                </button></a>
+        </div>
+        <div class="footer__last">
+            <div class="last__text">Всі права захищено © <script>document.write( new Date().getFullYear() );</script></div>
+        </div>
+
+
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script>
+
+        $('a[href^="#"]').on('click', function (event) {
+            var link = $(this.getAttribute('href'));
+            if (link.length) {
+                event.preventDefault();
+                $('html, body').stop().animate({
+                    scrollTop: link.offset().top
+                }, 1800);
+            }
+        });
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                ShowMenu: true,
+
+            }
+
+        })
+    </script>
+
+
 </body>
 </html>

@@ -1,24 +1,111 @@
 {% extends "base.html" %}
+{% load static %}
 {% block html_title %}
     {{block.super}}  - Subjects
 {% endblock html_title%}
 
 {% block content %}
-    <ul>
+    <!--<ul>
         {% for subject in subjects %}
         <li><strong>{{subject.title}}</strong></a>
-            {{subject.subject_description}}</br>
+            {{subject.description}}</br>
             <p>List of bots: </p>
             <ul>
+                {% if subject.telegram_bot_name %}
                 <li><a href=https://t.me/{{subject.telegram_bot_name}} target="_blank">Telegram</a></li>
+                {% endif %}
+                {% if subject.viber_bot_name %}
                 <li><a href=https://t.me/{{subject.viber_bot_name}} target="_blank">Viber</a></li>
+                {% endif %}
+                {% if subject.messenger_bot_name %}
                 <li><a href=https://t.me/{{subject.messenger_bot_name}} target="_blank">Messenger</a></li>
+                {% endif %}
+                {% if subject.whatsapp_bot_name %}
                 <li><a href=https://t.me/{{subject.whatsapp_bot_name}} target="_blank">Whatsapp</a></li>
+                {% endif %}
             </ul><hr/>
         </li>
         {% empty %}
         <li>No subjects yet</li>
         {% endfor %}
-    </ul>
+    </ul>-->
+    <section class="middle">
+        <div class="wrapper">
+            <div class="middle__title">вибери бота</div>
+            <div class="middle__subtitle">*Але перед цим, <a href="#usage" class="middle__link">почитай</a> як
+                користуватись, якщо ти у нас вперше</div>
+
+            {% for subject in subjects %}   
+            <ul class="middle__gallery" id="bots">
+                {% if subject.title == "Українська мова та література" %}
+                <li class="gallery__itembig">
+                    {% if subject.telegram_bot_name %}
+                    <a href=https://t.me/{{subject.telegram_bot_name}} target="blank" class="item__link">
+                    {% endif %}
+                        <div class="item__name">{{subject.title}}</div>
+                        <div class="item__descr">{{subject.description}}</div>
+                    </a>
+                </li>
+                {% endif %}
+                {% if subject.title != "Українська мова та література" %}
+                <li class="gallery__item" style="background-image: url({{subject.image_title}});">
+                    {% if subject.telegram_bot_name %}
+                    <a href=https://t.me/{{subject.telegram_bot_name}} target="blank" class="item__link">
+                    {% endif %}
+                        <div class="item__name">{{subject.title}}</div>
+                        <div class="item__descr">{{subject.description}}</div>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+            {% empty %}
+            <li>No subjects yet</li>
+            {% endfor %}
+        </div>
+    </section>
+
+
+    <section class="bottom">
+        <img class="animation__left" src="{% static "images/skovrodaleft.png" %}">
+        <div class="bottom__container">
+            <div class="bottom__title" id="usage"> як користуватись? </div>
+            <div class="bottom__message">
+                <div class="message__content">Насправді, все дуже просто, поки за нами підглядає <span
+                        class="content__underlined">Григорій Сковорода</span>, я
+                    тобі швиденько розповім. Отже:</div>
+            </div>
+            <div class="steps__container">
+                <div class="bottom__step">
+                    <div class="step__number">1</div>
+                    <div class="step__text">Перш за все нам потрібно прочитати до кінця як правильно користуватись
+                        ботом. Насправді все дуже просто, але навіть Сковорода підглядає, бо не зміг самостійно
+                        розібратись</div>
+                    <img class="step__image" src="{% static "images/comp.png" %}">
+                </div>
+                <div class="bottom__stepright">
+                    <img class="image__right" src="{% static "images/comp1.png" %}">
+                    <div class="step__text">Далі, після того, як ми прочитали як правильно користуватись ботом і вже
+                        готові тестів, вибираємо потрібну категорію, але також не забуваємо прочитати вводний текст
+                    </div>
+
+                    <div class="step__number">2</div>
+
+
+                </div>
+                <div class="bottom__step">
+                    <div class="step__number">3</div>
+                    <div class="step__text">І ось ми уже в телеграмі. Щоб почати виконувати тести, потрібно натиснути
+                        кнопку “розпочати”. Далі вам по черзі задаються питання. Ваша задача вибирати правильно
+                        відповідь. Щасти! </div>
+                    <img class="step__image" src="{% static "images/comp2.png" %}">
+                </div>
+            </div>
+            <img class="animation__right" src="{% static "images/skovorodaright.png" %}">
+        </div>
+
+    </section>
 
 {% endblock content %}
+
+
+
