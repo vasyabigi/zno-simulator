@@ -1,5 +1,4 @@
 from flask import Flask, request
-import random
 from pymessenger import Button
 from pymessenger.bot import Bot
 import requests
@@ -11,6 +10,12 @@ VERIFY_TOKEN = "TOKEN11111"
 
 bot = Bot(ACCESS_TOKEN)
 app = Flask(__name__)
+
+
+BUTTONS = [
+    {"type": "postback", "payload": "question", "title": "question"},
+    {"type": "postback", "payload": "exit", "title": "exit"},
+]
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -27,36 +32,56 @@ def receive_message():
         for event in output["entry"]:
             messaging = event["messaging"]
             for message in messaging:
+                recipient_id = message["sender"]["id"]
+                print(message)
                 if message.get("postback"):
-                    response_sent_text = (
-                        f"your answer is {message['postback']['payload']}"
-                    )
-                    recipient_id = message["sender"]["id"]
-                    send_message(recipient_id, response_sent_text)
-                elif message.get("message"):
-                    # определяем ID, чтобы знать куда отправлять ответ
-                    recipient_id = message["sender"]["id"]
+                    if message["postback"]["payload"] == "question":
+                        send_message(recipient_id, get_question_str())
+                        list_of_buttons = []
+                        for item in get_question_list()[1]:
+                            list_of_buttons.append(
+                                {
+                                    "content_type": "text",
+                                    "title": item["id"] + 1,
+                                    "payload": item["is_correct"],
+                                }
+                            )
+                        bot.send_message(
+                            recipient_id=recipient_id,
+                            message={
+                                "text": "Choices:",
+                                "quick_replies": list_of_buttons,
+                            },
+                        )
+                    elif message["postback"]["payload"] == "exit":
+                        send_message(recipient_id, "You are the best!!!")
+                        break
+                if message.get("message"):
                     if message["message"].get("text"):
-                        if message["message"]["text"] == "st":
-                            send_message(recipient_id, get_question()[0])
-                            for item in get_question()[1]:
-                                buttons = [
+                        if message["message"]["text"] == "St":
+                            send_message(recipient_id, get_question_str())
+                            list_of_buttons = []
+                            for item in get_question_list()[1]:
+                                list_of_buttons.append(
                                     {
-                                        "type": "postback",
-                                        "payload": str(item["is_correct"]),
+                                        "content_type": "text",
                                         "title": item["id"] + 1,
+                                        "payload": item["is_correct"],
                                     }
-                                ]
-                                bot.send_button_message(
-                                    recipient_id, item["content"], buttons
                                 )
+                            bot.send_message(
+                                recipient_id=recipient_id,
+                                message={
+                                    "text": "Choices:",
+                                    "quick_replies": list_of_buttons,
+                                },
+                            )
                         else:
-                            response_sent_text = get_message()
-                            send_message(recipient_id, response_sent_text)
-                    # если пользователь отправил GIF, фото, видео и любой не текстовый объект
+                            bot.send_button_message(recipient_id, "choices:", BUTTONS)
                     if message["message"].get("attachments"):
-                        response_sent_nontext = get_message()
-                        send_message(recipient_id, response_sent_nontext)
+                        pass
+                        # response_sent_nontext = get_message()
+                        # send_message(recipient_id, response_sent_nontext)
         return "Message Processed"
     return "Hello World!"
 
@@ -71,28 +96,26 @@ def verify_fb_token(token_sent):
 
 
 def send_message(recipient_id, response):
-    """Отправляет пользователю текстовое сообщение в соответствии с параметром response."""
     bot.send_text_message(recipient_id, response)
     return "success"
 
 
-def get_message():
-    """Отправляет случайные сообщения пользователю."""
-    sample_responses = [
-        "Потрясающе!",
-        "Я вами горжусь!",
-        "Продолжайте в том же духе!",
-        "Лучшее, что я когда-либо видел!",
-    ]
-    return random.choice(sample_responses)
-
-
-def get_question(subject="ukr"):
+def get_question_list(subject="ukr"):
     get_all_page = requests.get(f"{QUESTIONS_API_ROOT}/random?subject={subject}")
     get_dict_with_question = json.loads(get_all_page.content)
     question_with_choices = []
     question_with_choices.append(get_dict_with_question["content"])
     question_with_choices.append(get_dict_with_question["choices"])
+    return question_with_choices
+
+
+def get_question_str(subject="ukr"):
+    get_all_page = requests.get(f"{QUESTIONS_API_ROOT}/random?subject={subject}")
+    get_dict_with_question = json.loads(get_all_page.content)
+    question_with_choices = ""
+    question_with_choices += get_dict_with_question["content"] + "\n"
+    for item in get_dict_with_question["choices"]:
+        question_with_choices += item["content"] + "\n"
     return question_with_choices
 
 
