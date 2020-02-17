@@ -1,16 +1,17 @@
 import json
 import asyncio
 
-from .scrapper import get_osvita_ua_questions
-from .converter import QuestionConverter
+from zno_parser.scrapper import get_osvita_ua_questions
+from zno_parser.converter import QuestionConverter
 
 
 async def main():
     raw_questions = await get_osvita_ua_questions()
-    converted_questions = QuestionConverter.bulk_to_internal(raw_questions)
+    for format in ('html', 'markdown', 'raw'):
+        converted_questions = QuestionConverter.bulk_to_internal(raw_questions)
 
-    with open("questions.json", "w") as f:
-        json.dump(converted_questions, f)
+        with open(f"questions_{format}.json", "w") as f:
+            json.dump(converted_questions, f)
 
 
 if __name__ == "__main__":

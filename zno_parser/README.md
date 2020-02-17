@@ -36,5 +36,5 @@ pip install -r requirements.txt
 ## Running script ##
 ```bash
 cd zno-simulator
-python -m content.main
+python -m zno-parser.main
 ```
