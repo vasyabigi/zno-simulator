@@ -24,13 +24,17 @@ class Choice:
         item = choice["content"].split(":", 1)
 
         self.key = item[0]  # item[0].replace("*", "").lower()
-        self.value = item[1].strip()
+
+        if len(item) > 1:
+            self.value = item[1].strip()
+        else:
+            self.value = ""
 
     @property
     def text(self):
         key = self.key + ":"
 
-        return key + " " + self.value + " (" + str(self.is_correct) + ")"
+        return key + " " + self.value  # + " (" + str(self.is_correct) + ")"
 
 
 class Choices(list):
@@ -69,6 +73,10 @@ class Question:
     @property
     def text(self):
         return f"{QUESTION_MARK} {self.content}?\n\n{INDEX_POINTING_RIGHT} {CHOICES_AVAILABLE_B}\n{self.choices.text}"
+
+    @property
+    def choices_text(self):
+        return f"{INDEX_POINTING_RIGHT} {CHOICES_AVAILABLE_B}\n{self.choices.text}"
 
     @property
     def explanation_text(self):

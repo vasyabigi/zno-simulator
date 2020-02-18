@@ -1,4 +1,3 @@
-import copy
 from urllib.parse import urljoin
 
 QUESTIONS_API_ROOT = "http://zno-dev.eu-central-1.elasticbeanstalk.com/questions"
@@ -30,6 +29,17 @@ SHOW_ANSWER = f"{CHECK_MARK_BUTTON} Показати правильну відп
 
 CORRECT_CHOICE_STR = "- Ваша відповідь правильна!"
 INCORRECT_CHOICE_STR = "- Ви помилились."
+
+QUESTION_STR = "📚 Питання"
+ANONYMOUS_USER = "Таємничий користувач"
+SUBSCRIBED_GREETING = "Вітаю з поверненням, {name}!\n" "Ти знаєш що робити! Щасти! 😉"
+NOT_SUBSCRIBED_GREETING = (
+    "Вітаю, {name}!\n"
+    "Я допоможу тобі підготуватись до ЗНО з легкістю!\n"
+    "Усе зовім просто: я - питаю ❓, ти - відповідаєш ✅.\n"
+    'Натисни на кнопку "{button_name}" щоб розпочати!\n'
+    "Щасти! 😉"
+)
 
 EMPTY_ACTION_BODY = {
     "operation": None,
@@ -73,7 +83,3 @@ EXPLANATION_BUTTON = {
     # "BgColor": "#e6f5ff",
     "Text": f'<font color="Black"><b>{EXPLANATION_STR}</b></font>',
 }  # See more: https://viber.github.io/docs/tools/keyboards/
-
-
-def get_empty_keyboard():
-    return copy.deepcopy(EMPTY_KEYBOARD)
