@@ -3,6 +3,7 @@ import lxml.html.clean as clean
 import tomd
 from bs4 import BeautifulSoup
 
+from .config import Formats
 from .scrapper import SUBJECTS_TO_CODES
 
 
@@ -15,10 +16,6 @@ QUESTION_TYPE_URL_TO_KIND = {
     "/dovidka/viditestiv/5/": "multiple-choice",
 }
 
-FORMAT_TYPES = {
-
-}
-
 UA_LETTERS = "АБВГДЕЄЖЗ"
 
 MAX_TEXT_LENGTH = 3600
@@ -27,15 +24,15 @@ SUPPORTED_QUESTION_TYPES = ("single-choice",)
 
 
 class QuestionConverter:
-    def __init__(self, index, raw_question, format='markdown'):
+    def __init__(self, index, raw_question, format=Formats.MARKDOWN.value):
         self.index = index
         self.raw_question = raw_question
         self.content_get = BeautifulSoup(raw_question["content_get"], "html.parser")
         self.content_post = BeautifulSoup(raw_question["content_post"], "html.parser")
         self.formatter = {
-            'html': self.soup_to_html,
-            'markdown': self.soup_to_markdown,
-            'raw': self.soup_to_raw_text
+            Formats.HTML.value: self.soup_to_html,
+            Formats.MARKDOWN.value: self.soup_to_markdown,
+            Formats.RAW.value: self.soup_to_raw_text,
         }.get(format)
 
     def to_internal(self):
@@ -54,7 +51,7 @@ class QuestionConverter:
         }
 
     @staticmethod
-    def bulk_to_internal(raw_questions, format='raw'):
+    def bulk_to_internal(raw_questions, format):
         """
         Converts raw html questions from osvita.ua to well-formatted json structure.
 
@@ -84,7 +81,7 @@ class QuestionConverter:
         output = soup_txt.strip("\n").strip(" ")
         output = output.replace("<br>", "\n")
         if letter:
-            output = f'<strong>{output}</strong>'
+            output = f"<strong>{output}</strong>"
 
         return output
 
@@ -112,7 +109,7 @@ class QuestionConverter:
         output = output.strip("\n").strip(" ")
         output = output.replace("<br>", "\n")
         if letter:
-            output = f'*{output}*'
+            output = f"*{output}*"
 
         return output
 
@@ -161,7 +158,7 @@ class QuestionConverter:
         for index, dom_choice in enumerate(dom_choices):
             letter = self.formatter(
                 dom_choice.find("span", attrs={"class": "q-number"}).extract(),
-                letter=True
+                letter=True,
             )
 
             choices.append(
@@ -185,9 +182,7 @@ class QuestionConverter:
         return choices
 
     def get_content(self):
-        return self.formatter(
-            self.content_post.find("div", attrs={"class": "q-txt"})
-        )
+        return self.formatter(self.content_post.find("div", attrs={"class": "q-txt"}))
 
     def get_explanation(self):
         explanation = self.content_post.find("div", attrs={"class": "explanation"})
