@@ -28,3 +28,5 @@ DATABASES = {
         "CONN_MAX_AGE": 0,
     }
 }
+
+ALLOWED_HOSTS = ["zno-landing-page-dev.eu-central-1.elasticbeanstalk.com"]
