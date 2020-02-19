@@ -4,6 +4,8 @@ import json
 from viberbot.api.messages import TextMessage, PictureMessage
 
 from constants import (
+    IMAGE_URL,
+    THUMBNAIL_URL,
     QUESTION_STR,
     INDEX_POINTING_RIGHT,
     CHOICES_AVAILABLE_B,
@@ -50,18 +52,23 @@ class ViberResponseTextMessage:
 
 
 class ViberResponsePictureMessage(ViberResponseTextMessage):
-    def __init__(self, viber_request, media, keyboard=None, min_api_version=4):
+    def __init__(self, viber_request, question_id, keyboard=None, min_api_version=4):
         super().__init__(viber_request, keyboard, min_api_version)
 
-        self.media = media
+        self.question_id = question_id
 
     @property
     def message(self):
+        print("=================================================")
+        print(IMAGE_URL.format(id=self.question_id))
+        print(THUMBNAIL_URL.format(id=self.question_id))
+
         return PictureMessage(
             tracking_data=self.tracking_data,
             keyboard=self.keyboard,
             text=self.text,
-            media=self.media,
+            media=IMAGE_URL.format(id=self.question_id),
+            thumbnail=THUMBNAIL_URL.format(id=self.question_id),
             min_api_version=self.min_api_version,
         )
 
@@ -92,10 +99,15 @@ def get_question_response(viber_request, subject, response_message):
     question = get_question(subject)
 
     if question.image and question.content:
-        response_message.append(PictureMessage(media=question.image))
+        response_message.append(
+            PictureMessage(
+                media=IMAGE_URL.format(id=question.id),
+                thumbnail=THUMBNAIL_URL.format(id=question.id),
+            )
+        )
 
     if question.image and not question.content:
-        viber_response = ViberResponsePictureMessage(viber_request, question.image)
+        viber_response = ViberResponsePictureMessage(viber_request, question.id)
 
         viber_response.text = f"{INDEX_POINTING_RIGHT} {CHOICES_AVAILABLE_B}"
     else:

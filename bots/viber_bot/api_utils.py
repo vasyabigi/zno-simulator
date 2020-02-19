@@ -10,7 +10,9 @@ from question import Question, Answer
 
 
 def get_question(subject):
-    question_json = requests.get(f"{QUESTIONS_API_ROOT}/random?subject={subject}")
+    question_json = requests.get(
+        f"{QUESTIONS_API_ROOT}/random?subject={subject}&format=raw"
+    )
     question_dict = json.loads(question_json.content)
 
     return Question(question_dict)

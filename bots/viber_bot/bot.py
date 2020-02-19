@@ -135,5 +135,6 @@ if __name__ == "__main__":
     main()
 
 
-# viber://pa?chatURI=test_zno_ukr_bot
-# http://localhost:8443/set-webhook?subject=&url=
+# viber://pa?chatURI=zno_mathematics_bot
+# http://localhost:8443/set-webhook?subject=math&url=
+# http://localhost:8443/set-webhook?subject=math&url=https://af215d71.ngrok.io

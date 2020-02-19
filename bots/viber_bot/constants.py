@@ -3,6 +3,9 @@ from urllib.parse import urljoin
 QUESTIONS_API_ROOT = "http://zno-dev.eu-central-1.elasticbeanstalk.com/questions"
 QUESTION_URL = urljoin(QUESTIONS_API_ROOT, "/questions/{id}")
 ANSWER_URL = urljoin(QUESTIONS_API_ROOT, "/questions/{id}/answers")
+IMAGES_ROOT = "https://znobot-images.s3.eu-central-1.amazonaws.com/viber"
+IMAGE_URL = urljoin(IMAGES_ROOT, "/viber/{id}.jpg")
+THUMBNAIL_URL = urljoin(IMAGES_ROOT, "/viber/{id}_thumbnail.jpg")
 CHECK_MARK_BUTTON = "✅"
 CHECK_MARK_BLACK = "✔"
 CROSS_MARK = "❌"
@@ -36,7 +39,7 @@ SUBSCRIBED_GREETING = "Вітаю з поверненням, {name}!\n" "Ти з
 NOT_SUBSCRIBED_GREETING = (
     "Вітаю, {name}!\n"
     "Я допоможу тобі підготуватись до ЗНО з легкістю!\n"
-    "Усе зовім просто: я - питаю ❓, ти - відповідаєш ✅.\n"
+    "Усе зовcім просто: я - питаю ❓, ти - відповідаєш ✅.\n"
     'Натисни на кнопку "{button_name}" щоб розпочати!\n'
     "Щасти! 😉"
 )
