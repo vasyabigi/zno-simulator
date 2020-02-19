@@ -1,4 +1,5 @@
 import os
+import requests
 
 from django.core.exceptions import ImproperlyConfigured
 
@@ -20,6 +21,15 @@ def get_env_variable(var_name):
         raise ImproperlyConfigured(error_msg)
 
 
+def get_ec2_hostname():
+    try:
+        ipconfig = "http://169.254.169.254/latest/meta-data/local-ipv4"
+        return requests.get(ipconfig, timeout=10).text
+    except Exception:
+        error = "You have to be running on AWS to use AWS settings"
+        raise ImproperlyConfigured(error)
+
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
@@ -33,6 +43,6 @@ DATABASES = {
 }
 
 ALLOWED_HOSTS = [
-    "zno-landing-page-dev.eu-central-1.elasticbeanstalk.com",
+    get_ec2_hostname(),
     "znobot.tech",
 ]
