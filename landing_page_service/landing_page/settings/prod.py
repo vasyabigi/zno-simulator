@@ -5,6 +5,9 @@ from django.core.exceptions import ImproperlyConfigured
 from .common import *  # noqa F401
 
 
+DEBUG = False
+
+
 def get_env_variable(var_name):
     """
     Get the environment variable or return exception.
