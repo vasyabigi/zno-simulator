@@ -32,4 +32,7 @@ DATABASES = {
     }
 }
 
-ALLOWED_HOSTS = ["zno-landing-page-dev.eu-central-1.elasticbeanstalk.com"]
+ALLOWED_HOSTS = [
+    "zno-landing-page-dev.eu-central-1.elasticbeanstalk.com",
+    "znobot.tech",
+]
