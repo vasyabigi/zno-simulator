@@ -1,6 +1,6 @@
+import json
 import logging
 
-from os import path
 from flask import Flask, request, Response
 
 from viberbot import Api
@@ -14,7 +14,13 @@ from viberbot.api.viber_requests import (
     ViberUnsubscribedRequest,
 )
 
-from constants import QUESTION_BUTTON
+import config
+
+from constants import (
+    BOT_NAME,
+    BOT_AVATAR,
+    QUESTION_BUTTON,
+)
 
 from response_utils import (
     ViberResponseTextMessage,
@@ -33,98 +39,102 @@ formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(messag
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
-CURRENT_PATH = path.dirname(path.realpath(__file__))
+
+def configure_viber(subject="ukr"):
+    return Api(
+        BotConfiguration(
+            name=BOT_NAME, avatar=BOT_AVATAR, auth_token=config.viber_tokens[subject]
+        )
+    )
 
 
-def get_token(subject="test"):
-    with open(path.join(CURRENT_PATH, "config", f"{subject}.token")) as token:
-        return token.read()
+def viber_response(viber, request_data, request_headers_signature):
+    logger.debug(f"Received request. Post data: {request_data}")
+
+    # every viber message is signed, you can verify the signature using this method
+    if not viber.verify_signature(request_data, request_headers_signature):
+        return Response(status=403)
+
+    bot_request = viber.parse_request(request_data.decode("utf8"))
+
+    if isinstance(bot_request, ViberMessageRequest):
+        response_message = []
+
+        if bot_request.message.text == "get_question":
+            bot_response = get_question_response(viber, bot_request, response_message)
+
+        elif bot_request.message.text == "get_explanation":
+            bot_response = get_explanation_response(viber, bot_request)
+
+        elif bot_request.message.text == "get_answer":
+            bot_response = get_answer_response(viber, bot_request)
+
+        else:
+            bot_response = ViberResponseTextMessage(bot_request)
+
+            try:
+                user_answer = json.loads(bot_response.text)
+
+                if "choice_id" in user_answer:
+                    bot_response = check_answer_response(viber, bot_request)
+                else:
+                    bot_response.text = "Невідома команда:\n" + bot_response.text
+            except json.JSONDecodeError:
+                bot_response.text = "Невідома команда:\n" + bot_response.text
+
+        bot_response.keyboard["Buttons"].append(QUESTION_BUTTON)
+
+        response_message.append(bot_response.message)
+
+        viber.send_messages(bot_request.sender.id, response_message)
+
+    elif isinstance(bot_request, ViberConversationStartedRequest):
+        bot_response = get_conversation_started_response(viber, bot_request)
+
+        viber.send_messages(bot_request.user.id, [bot_response.message])
+
+    elif isinstance(bot_request, ViberSubscribedRequest):
+        logger.warn(f"User {bot_request.user_id} subscribed!")
+
+    elif isinstance(bot_request, ViberUnsubscribedRequest):
+        logger.warn(f"User {bot_request.user_id} unsubscribed!")
+
+    elif isinstance(bot_request, ViberFailedRequest):
+        logger.warn(f"Client failed receiving message. Failure: {bot_request}!")
+
+    return Response(status=200)
 
 
-subject = ["ukr"]
 app = Flask(__name__)
-viber = Api(BotConfiguration(name="ЗНО бот", avatar="", auth_token=get_token()))
+viber = configure_viber()
 
 
 @app.route("/set-webhook", methods=["GET"])
 def register_webhook():
-    event_types = [
-        "subscribed",
-        "unsubscribed",
-        "message",
-        "conversation_started",
-    ]
+    subject = request.args["subject"]
+    url = request.args["url"]
 
-    request_subject = request.args["subject"]
-
-    if request_subject:
-        subject.insert(0, request_subject)
-
+    if subject:
         global viber
-        viber = Api(
-            BotConfiguration(
-                name="ЗНО бот", avatar="", auth_token=get_token(request_subject)
-            )
-        )
+        viber = configure_viber(subject)
 
-        logger.info(f"Set subject: {request_subject}")
+        logger.info(f"Set subject: {subject}")
 
-    viber.set_webhook(request.args["url"], event_types)
-    logger.info(f"Webhook set to: {request.args['url']}")
+    try:
+        viber.set_webhook(url, config.event_types)
+
+        logger.info(f"Webhook set to: {url}")
+    except Exception as e:
+        logger.info(f"Webhook error with {url}: {e}")
 
     return Response(status=200)
 
 
 @app.route("/", methods=["POST"])
 def incoming():
-    logger.debug(f"Received request. Post data: {request.get_data()}")
-
-    # every viber message is signed, you can verify the signature using this method
-    if not viber.verify_signature(
-        request.get_data(), request.headers.get("X-Viber-Content-Signature")
-    ):
-        return Response(status=403)
-
-    viber_request = viber.parse_request(request.get_data().decode("utf8"))
-
-    if isinstance(viber_request, ViberMessageRequest):
-        response_message = []
-
-        if viber_request.message.text == "get_question":
-            viber_response = get_question_response(
-                viber_request, subject[0], response_message
-            )
-
-        elif viber_request.message.text == "get_explanation":
-            viber_response = get_explanation_response(viber_request, subject[0])
-
-        elif viber_request.message.text == "get_answer":
-            viber_response = get_answer_response(viber_request)
-
-        else:
-            viber_response = check_answer_response(viber_request)
-
-        viber_response.keyboard["Buttons"].append(QUESTION_BUTTON)
-
-        response_message.append(viber_response.message)
-
-        viber.send_messages(viber_request.sender.id, response_message)
-
-    elif isinstance(viber_request, ViberConversationStartedRequest):
-        viber_response = get_conversation_started_response(viber_request)
-
-        viber.send_messages(viber_request.user.id, [viber_response.message])
-
-    elif isinstance(viber_request, ViberSubscribedRequest):
-        logger.warn(f"User {viber_request.user_id} subscribed!")
-
-    elif isinstance(viber_request, ViberUnsubscribedRequest):
-        logger.warn(f"User {viber_request.user_id} unsubscribed!")
-
-    elif isinstance(viber_request, ViberFailedRequest):
-        logger.warn(f"Client failed receiving message. Failure: {viber_request}!")
-
-    return Response(status=200)
+    return viber_response(
+        viber, request.get_data(), request.headers.get("X-Viber-Content-Signature")
+    )
 
 
 def main():
@@ -136,5 +146,5 @@ if __name__ == "__main__":
 
 
 # viber://pa?chatURI=zno_mathematics_bot
-# http://localhost:8443/set-webhook?subject=math&url=
-# http://localhost:8443/set-webhook?subject=math&url=https://af215d71.ngrok.io
+# http://localhost:8443/set-webhook?subject=ukr&url=
+# http://localhost:8443/set-webhook?subject=ukr&url=https://b51297c8.ngrok.io

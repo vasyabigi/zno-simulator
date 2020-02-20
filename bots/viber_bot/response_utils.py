@@ -3,6 +3,8 @@ import json
 
 from viberbot.api.messages import TextMessage, PictureMessage
 
+# from amplitude import log_event
+
 from constants import (
     IMAGE_URL,
     THUMBNAIL_URL,
@@ -22,14 +24,15 @@ from api_utils import (
     get_question,
     get_question_by_id,
     get_answer,
+    get_subject_code,
 )
 
 
 class ViberResponseTextMessage:
-    def __init__(self, viber_request, keyboard=None, min_api_version=4):
-        if hasattr(viber_request, "message"):
-            self.tracking_data = viber_request.message.tracking_data
-            self.text = viber_request.message.text
+    def __init__(self, request, keyboard=None, min_api_version=4):
+        if hasattr(request, "message"):
+            self.tracking_data = request.message.tracking_data
+            self.text = request.message.text
         else:
             self.tracking_data = None
             self.text = None
@@ -52,17 +55,13 @@ class ViberResponseTextMessage:
 
 
 class ViberResponsePictureMessage(ViberResponseTextMessage):
-    def __init__(self, viber_request, question_id, keyboard=None, min_api_version=4):
-        super().__init__(viber_request, keyboard, min_api_version)
+    def __init__(self, request, question_id, keyboard=None, min_api_version=4):
+        super().__init__(request, keyboard, min_api_version)
 
         self.question_id = question_id
 
     @property
     def message(self):
-        print("=================================================")
-        print(IMAGE_URL.format(id=self.question_id))
-        print(THUMBNAIL_URL.format(id=self.question_id))
-
         return PictureMessage(
             tracking_data=self.tracking_data,
             keyboard=self.keyboard,
@@ -73,29 +72,31 @@ class ViberResponsePictureMessage(ViberResponseTextMessage):
         )
 
 
-def get_conversation_started_response(viber_request):
-    if viber_request.user:
-        user_name = viber_request.user.name
+def get_conversation_started_response(bot, request):
+    if request.user:
+        user_name = request.user.name
     else:
         user_name = ANONYMOUS_USER
 
-    if viber_request.subscribed:
+    if request.subscribed:
         subscribed_status = SUBSCRIBED_GREETING.format(name=user_name)
     else:
         subscribed_status = NOT_SUBSCRIBED_GREETING.format(
             name=user_name, button_name=QUESTION_STR
         )
 
-    viber_response = ViberResponseTextMessage(viber_request)
+    response = ViberResponseTextMessage(request)
 
-    viber_response.text = subscribed_status
+    response.text = subscribed_status
 
-    viber_response.keyboard["Buttons"].append(QUESTION_BUTTON)
+    response.keyboard["Buttons"].append(QUESTION_BUTTON)
 
-    return viber_response
+    return response
 
 
-def get_question_response(viber_request, subject, response_message):
+# @log_event("get_random_question")
+def get_question_response(bot, request, response_message):
+    subject = get_subject_code(bot)
     question = get_question(subject)
 
     if question.image and question.content:
@@ -107,62 +108,66 @@ def get_question_response(viber_request, subject, response_message):
         )
 
     if question.image and not question.content:
-        viber_response = ViberResponsePictureMessage(viber_request, question.id)
+        response = ViberResponsePictureMessage(request, question.id)
 
-        viber_response.text = f"{INDEX_POINTING_RIGHT} {CHOICES_AVAILABLE_B}"
+        response.text = f"{INDEX_POINTING_RIGHT} {CHOICES_AVAILABLE_B}"
     else:
-        viber_response = ViberResponseTextMessage(viber_request)
+        response = ViberResponseTextMessage(request)
 
-        viber_response.text = question.text
+        response.text = question.text
 
-    viber_response.tracking_data = question.id
-    viber_response.keyboard["Buttons"].extend(question.buttons)
+    response.tracking_data = question.id
+    response.keyboard["Buttons"].extend(question.buttons)
 
-    return viber_response
-
-
-def get_explanation_response(viber_request, subject):
-    viber_response = ViberResponseTextMessage(viber_request)
-
-    question = get_question_by_id(subject, viber_response.tracking_data)
-
-    viber_response.text = question.explanation_text
-
-    return viber_response
+    return response
 
 
-def get_answer_response(viber_request):
-    viber_response = ViberResponseTextMessage(viber_request)
+# @log_event("show_explanation")
+def get_explanation_response(bot, request):
+    subject = get_subject_code(bot)
+    response = ViberResponseTextMessage(request)
 
-    answer = get_answer(viber_response.tracking_data)
+    question = get_question_by_id(subject, response.tracking_data)
 
-    viber_response.text = answer.correct_answer_text
+    response.text = question.explanation_text
 
-    return viber_response
+    return response
 
 
-def check_answer_response(viber_request):
-    viber_response = ViberResponseTextMessage(viber_request)
+# @log_event("show_correct_answer")
+def get_answer_response(bot, request):
+    response = ViberResponseTextMessage(request)
 
-    try:
-        user_answer = json.loads(viber_response.text)
+    answer = get_answer(response.tracking_data)
 
-        if "choice_id" in user_answer:
-            question_id = user_answer["question_id"]
-            choice_id = user_answer["choice_id"]
+    response.text = answer.correct_answer_text
 
-            answer = get_answer(question_id, choice_id)
+    return response
 
-            if answer.is_correct:
-                if answer.has_explanation:
-                    viber_response.keyboard["Buttons"].append(EXPLANATION_BUTTON)
-            else:
-                viber_response.keyboard["Buttons"].append(ANSWER_BUTTON)
 
-            viber_response.text = answer.user_answer_text(choice_id)
-        else:
-            viber_response.text = "Невідома команда:\n" + viber_response.text
-    except json.JSONDecodeError:
-        viber_response.text = "Невідома команда:\n" + viber_response.text
+# @log_event("send_answer", keys=["is_correct"])
+def get_answer_result(bot, request):
+    response = ViberResponseTextMessage(request)
 
-    return viber_response
+    user_answer = json.loads(response.text)
+
+    question_id = user_answer["question_id"]
+    choice_id = user_answer["choice_id"]
+
+    return get_answer(question_id, choice_id)
+
+
+def check_answer_response(bot, request):
+    answer = get_answer_result(bot, request)
+
+    response = ViberResponseTextMessage(request)
+
+    if answer.is_correct:
+        if answer.has_explanation:
+            response.keyboard["Buttons"].append(EXPLANATION_BUTTON)
+    else:
+        response.keyboard["Buttons"].append(ANSWER_BUTTON)
+
+    response.text = answer.user_answer_text(answer.choice_id)
+
+    return response

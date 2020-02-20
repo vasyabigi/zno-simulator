@@ -1,3 +1,4 @@
+import config
 import requests
 import json
 
@@ -30,4 +31,10 @@ def get_answer(question_id, choice_id=0):
         ANSWER_URL.format(id=question_id), json={"choices": [choice_id]}
     )
 
-    return Answer(answer_response.content)
+    return Answer(answer_response.content, choice_id)
+
+
+def get_subject_code(bot):
+    for key, value in config.viber_tokens.items():
+        if value == bot._bot_configuration.auth_token:
+            return key
