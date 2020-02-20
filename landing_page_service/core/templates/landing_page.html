@@ -35,32 +35,62 @@
             <div class="middle__subtitle">*Але перед цим, <a href="#usage" class="middle__link">почитай</a> як
                 користуватись, якщо ти у нас вперше</div>
 
-            {% for subject in subjects %}   
             <ul class="middle__gallery" id="bots">
+            {% for subject in subjects %}   
                 {% if subject.title == "Українська мова та література" %}
-                <li class="gallery__itembig">
-                    {% if subject.telegram_bot_name %}
-                    <a href=https://t.me/{{subject.telegram_bot_name}} target="blank" class="item__link">
-                    {% endif %}
-                        <div class="item__name">{{subject.title}}</div>
+                <li class="gallery__itembig"  style="background-image: url({{subject.image_title}});">
+                        <div class="item__link">
+                        <div class="item__name" style="padding: 20px">{{subject.title}}</div>
                         <div class="item__descr">{{subject.description}}</div>
-                    </a>
+                        {% if subject.telegram_bot_name %}
+                        <a href=https://t.me/{{subject.telegram_bot_name}} target="blank">
+                            <img alt="телега" src="https://pngicon.ru/file/uploads/telegram.png" style="width: 25px; height: 25px; margin-left: 150px; margin: 5px">
+                        </a>
+                        {% endif %}
+                        {% if subject.viber_bot_name %}
+                        <a href=viber://pa?chatURI={{subject.viber_bot_name}} target="blank">
+                            <img alt="viber" src="https://pngicon.ru/file/uploads/viber.png"  style="width: 25px; height: 25px; margin: 5px">
+                        </a>
+                        {% endif %}
+                        {% if subject.messenger_bot_name %}
+                        <a href=https://facebook.com/{{subject.messenger_bot_name}} target="blank">
+                            <img alt="messenger" src="https://user-images.githubusercontent.com/2795476/51910277-b7e42a80-2409-11e9-98aa-522020814a31.png"  style="width: 25px; height: 25px; margin: 5px;">
+                        </a>
+                        {% endif %}
+                    
+                   
+                    </div>
+                   
                 </li>
                 {% endif %}
                 {% if subject.title != "Українська мова та література" %}
                 <li class="gallery__item" style="background-image: url({{subject.image_title}});">
-                    {% if subject.telegram_bot_name %}
-                    <a href=https://t.me/{{subject.telegram_bot_name}} target="blank" class="item__link">
-                    {% endif %}
-                        <div class="item__name">{{subject.title}}</div>
+                        <div class="item__link">
+                        <div class="item__name" style="padding: 20px">{{subject.title}}</div>
                         <div class="item__descr">{{subject.description}}</div>
-                    </a>
+                        {% if subject.telegram_bot_name %}
+                        <a href=https://t.me/{{subject.telegram_bot_name}} target="blank">
+                            <img alt="телега" src="https://pngicon.ru/file/uploads/telegram.png" style="width: 25px; height: 25px; margin: 5px">
+                        </a>
+                        {% endif %}
+                        {% if subject.viber_bot_name %}
+                        <a href=viber://pa?chatURI={{subject.viber_bot_name}} target="blank">
+                            <img alt="viber" src="https://pngicon.ru/file/uploads/viber.png"  style="width: 25px; height: 25px; margin: 5px">
+                        </a>
+                        {% endif %}
+                        {% if subject.messenger_bot_name %}
+                        <a href=https://facebook.com/{{subject.messenger_bot_name}} target="blank">
+                            <img alt="messenger" src="https://user-images.githubusercontent.com/2795476/51910277-b7e42a80-2409-11e9-98aa-522020814a31.png"  style="width: 25px; height: 25px; margin: 5px">
+                        </a>
+                        {% endif %}
+                    </div>
+                    
                 </li>
                 {% endif %}
+                {% empty %}
+                <li>No subjects yet</li>
+                {% endfor %}
             </ul>
-            {% empty %}
-            <li>No subjects yet</li>
-            {% endfor %}
         </div>
     </section>
 
