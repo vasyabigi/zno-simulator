@@ -8,7 +8,7 @@
 
 {% block content %}
     <main>
-        <section class="random">
+        {% comment %} <section class="random">
             <div class="container">
                 <div class="heading">
                     <div class="heading__title">сектор приз від Андрійовича</div>
@@ -36,7 +36,7 @@
 
                         <div class="answer-block">
                             <div class="answer">
-                                <div class="answers-wrapper answer__item" v-for="option in choices" v-bind:class="{'answer__item--true': answer === option.content && option.is_correct, 
+                                <div class="answers-wrapper answer__item" v-for="option in choices" v-bind:class="{'answer__item--true': answer === option.content && option.is_correct,
                             'answer__item--false': answer === option.content && !option.is_correct}">
                                     <label v-bind:for="option.id" class="answer__label">
                                         <input type="radio" v-model="answer" v-bind:id="option.id"
@@ -49,7 +49,7 @@
                     </div>
                 </div>
             </div>
-        </section>
+        </section> {% endcomment %}
 
         <section class="main-items" id="bot">
             <div class="container">
@@ -58,7 +58,7 @@
                 </div>
 
                 <ul class="list">
-                {% for subject in subjects %}      
+                {% for subject in subjects %}
                     {% if subject.title == "Українська мова та література" %}
                     <li class="list__item list__item--main">
                         <div class="item-container">

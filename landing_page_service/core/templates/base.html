@@ -10,14 +10,12 @@
     <link href="https://fonts.googleapis.com/css?family=Work+Sans&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static "css/style.css" %}">
     <title>
-        {% block html_title %}ZNOBOT{% endblock html_title %}
+        {% block html_title %}ZNOBOT - найпростіший шлях до 200{% endblock html_title %}
     </title>
 
     <style>.main-header {
         height: 100vh;
-        {% with subjects|random as subject %}
-        background: url(/{{subject.image_top}}) 50% no-repeat;
-        {% endwith %}
+        background: url(/static/assets/img/shevchenko.jpg) 50% no-repeat;
         background-size: cover; }
         @media only screen and (max-width: 768px) {
         .main-header {
@@ -41,11 +39,11 @@
 
                     <nav class="menu-wrapper">
                         <ul class="menu">
-                            <li class="menu__item"><a href="/#read" class="menu__link">як користуватись?</a></li>
-                            <li class="menu__item"><a href="/about-us" class="menu__link">про нас</a></li>
+                            <li class="menu__item"><a href="#read" class="menu__link">як користуватись?</a></li>
+                            {% comment %} <li class="menu__item"><a href="/about-us" class="menu__link">про нас</a></li> {% endcomment %}
                         </ul>
                         <div class="btn-wrapper">
-                            <a href="/#bot">
+                            <a href="#bot">
                                 <button class="btn btn--menu">вибрати бота</button>
                             </a>
                         </div>
@@ -60,12 +58,12 @@
                             заслання? тоді мерщій проходити тести!</div>
                     </div>
                     <div class="btn-wrapper">
-                        <a href="/#bot">
+                        <a href="#bot">
                             <button class="btn btn--big btn--static" id="btn-primary">вибрати бота</button>
                         </a>
                     </div>
                     <div class="btn-wrapper">
-                        <a href="/#read">
+                        <a href="#read">
                             <button class=" btn btn--big btn--transparent" id="btn-secondary">як
                                 користуватись?</button>
                         </a>
@@ -74,21 +72,21 @@
             </div>
         </section>
     </header>
-    
+
     {% block content %}
     {% endblock content %}
-  
+
     <footer>
         <section class="footer-nav">
             <div class="container">
                 <div class="footer-menu-wrapper">
                     <nav class="menu-wrapper">
                         <ul class="menu">
-                            <li class="menu__item"><a href="/#read" class="menu__link">як користуватись?</a></li>
-                            <li class="menu__item"><a href="/#" class="menu__link">про нас</a></li>
+                            <li class="menu__item"><a href="#read" class="menu__link">як користуватись?</a></li>
+                            {% comment %} <li class="menu__item"><a href="/#" class="menu__link">про нас</a></li> {% endcomment %}
                         </ul>
                         <div class="btn-wrapper">
-                            <a href="/#bot"><button class="btn btn--light">вибрати бота</button></a>
+                            <a href="#bot"><button class="btn btn--light">вибрати бота</button></a>
                         </div>
                     </nav>
                     <div class="btn btn--light btn--top" id="toTop">
@@ -108,15 +106,11 @@
         </section>
     </footer>
 
-    <script src="https://code.jquery.com/jquery-3.4.1.js"
-    integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"></script>
-<!-- <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
-    integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script> -->
-<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-<script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
-<script src="{% static "js/main.js" %}"></script>
-<script src="{% static "js/questions.js" %}"></script>
 
+    <script src="{% static "js/jquery.js" %}"></script>
+    {% comment %} <script src="{% static "js/vue.min.js" %}"></script> {% endcomment %}
+    <script src="{% static "js/main.js" %}"></script>
+    {% comment %} <script src="{% static "js/questions.js" %}"></script> {% endcomment %}
 </body>
 
 </html>
