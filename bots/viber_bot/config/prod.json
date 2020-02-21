@@ -1,5 +1,6 @@
 {
     "STAGE": "production",
+    "VIBER_TOKENS": "{\"ukr\":\"TOKEN\",\"math\":\"TOKEN\",\"his\":\"TOKEN\",\"geo\":\"TOKEN\",\"bio\":\"TOKEN\",\"phys\":\"TOKEN\",\"chem\":\"TOKEN\"}",
     "API_ROOT": "http://zno-dev.eu-central-1.elasticbeanstalk.com",
     "SENTRY_DSN": "https://5b3194f6d9274b699f7168219b9cf190@sentry.io/1769105",
     "AMPLITUDE_API_KEY": "170c365709fb80d0b29bded88ed23d1d"

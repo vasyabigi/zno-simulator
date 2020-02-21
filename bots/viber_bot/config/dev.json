@@ -1,5 +1,6 @@
 {
     "STAGE": "staging",
+    "VIBER_TOKENS": "{\"ukr\": \"TOKEN\"}",
     "API_ROOT": "http://zno-dev.eu-central-1.elasticbeanstalk.com",
     "SENTRY_DSN": "https://5b3194f6d9274b699f7168219b9cf190@sentry.io/1769105"
 }

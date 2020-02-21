@@ -107,10 +107,11 @@ class Question:
 
 
 class Answer:
-    def __init__(self, answer_response):
+    def __init__(self, answer_response, choice_id=None):
         self.answer = json.loads(answer_response)
 
         self.question_id = self.answer["id"]
+        self.choice_id = choice_id
         self.choices = Choices(self.answer["choices"])
         self.is_correct = self.answer["is_correct"]
 
