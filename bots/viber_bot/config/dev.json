@@ -1,6 +1,6 @@
 {
     "STAGE": "staging",
-    "VIBER_TOKENS": "{\"ukr\": \"TOKEN\"}",
+    "VIBER_TOKENS": "{\"ukr\": \"4b046ebf8327d166-6c30cb81186707f9-7693e8a5eb135f62\",\"math\": \"4b046ebf8327d166-6c30cb81186707f9-7693e8a5eb135f62\",\"his\": \"4b046ebf8327d166-6c30cb81186707f9-7693e8a5eb135f62\",\"geo\": \"4b046ebf8327d166-6c30cb81186707f9-7693e8a5eb135f62\",\"bio\": \"4b046ebf8327d166-6c30cb81186707f9-7693e8a5eb135f62\",\"phys\": \"4b046ebf8327d166-6c30cb81186707f9-7693e8a5eb135f62\",\"chem\": \"4b046ebf8327d166-6c30cb81186707f9-7693e8a5eb135f62\"}",
     "API_ROOT": "http://zno-dev.eu-central-1.elasticbeanstalk.com",
     "SENTRY_DSN": "https://5b3194f6d9274b699f7168219b9cf190@sentry.io/1769105"
 }
