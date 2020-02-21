@@ -147,4 +147,4 @@ if __name__ == "__main__":
 
 # viber://pa?chatURI=zno_mathematics_bot
 # http://localhost:8443/set-webhook?subject=ukr&url=
-# http://localhost:8443/set-webhook?subject=ukr&url=https://b51297c8.ngrok.io
+# http://localhost:8443/set-webhook?subject=ukr&url=https://781a5023.ngrok.io

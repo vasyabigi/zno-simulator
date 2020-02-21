@@ -1,6 +1,7 @@
 import json
 import logging
 import config
+import os
 
 from viberbot import Api
 from viberbot.api.bot_configuration import BotConfiguration
