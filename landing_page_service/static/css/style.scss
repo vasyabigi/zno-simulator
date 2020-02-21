@@ -94,14 +94,18 @@
                 height: 2px;
                 bottom: 0;
                 left: 0;
-                background-color: $color-accent;
+                background: $color-accent;
                 visibility: hidden;
-                transition: all 0.4s linear;
+                transition: all 0.3s linear;
             }
 
             &:hover:before {
                 visibility: visible;
                 width: 40px;
+            }
+
+            @include mobile {
+                font-family: $font-bold;
             }
         }
     }
@@ -141,7 +145,6 @@
 
         .slogan__subtitle {
             max-width: 75%;
-            // font-size: 14px;
         }
     }
 
@@ -166,28 +169,10 @@
     }
 }
 
-/*span*/
-.accent-text {
-    color: $color-accent;
-}
-.bold-text {
-    font-weight: $weight-bold;
-}
-
-.accent-light {
-    display: inline-block;
-    border-bottom: 2px solid $color-basic;
-    padding-bottom: 2px;
-    font-size: 26px;
-    font-weight: $weight-bold;
-}
-
-.question-mark {
-    @include font($font-bold, 32px, #FF0D0D, none);
-
-}
-
 /*MAIN*/
+main {
+    overflow: hidden;
+}
 
 .heading {
     text-align: center;
@@ -220,7 +205,7 @@
 
     &__subtitle-wrapper {
         display: flex;
-        justify-content: center;
+        justify-content: space-between;
         align-items: flex-end;
         margin: 0 auto;
         max-width: 100%;
@@ -238,7 +223,13 @@
         padding-bottom: 0;
     }
 
+    .heading__title {
+        padding-bottom: 0;
+        transform: translateY(30px);
+    }
+
     .heading__subtitle {
+        padding-bottom: 30px;
         @include font($font-bold, $fsize-primary, $color-title, none);
     }
 }
@@ -248,13 +239,13 @@
     max-width: 100%;
     margin: 0 auto;
 }
+
 .test-block,
 .answer-block {
     padding: $fsize-small 0;
 }
 
 .test {
-    // position: absolute;/**/
     padding: 25px;
     background: $color-test;
     border-radius: 5px;
@@ -316,7 +307,6 @@
     &__item:hover {
         cursor: pointer;
     }
-
 }
 
 .list {
@@ -331,7 +321,7 @@
         max-width: 25%;
         height: 430px;
         padding: 15px;
-        transition: all 0.4s linear;
+        transition: all 0.3s linear;
 
         &--main {
             flex: 50%;
@@ -342,6 +332,7 @@
             flex: 50%;
             max-width: 50%;
         }
+
         @include phablet {
             flex: 100%;
             max-width: 100%;
@@ -357,15 +348,17 @@
         position: relative;
         width: 100%;
         height: 100%;
-        transition: all 0.4s linear;
+        transition: all 0.3s linear;
     }
 
     .item-image-container {
         width: 100%;
         height: 100%;
     }
+
     .item-title-container {
         position: absolute;
+        top: 100%;
         width: 100%;
         transform: translateY(-60px);
         z-index: 5;
@@ -375,12 +368,23 @@
         }
     }
 
+    .shadow {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 3;
+        background: linear-gradient(154.3deg, rgba(5, 64, 118, 0.6) -21.38%, rgba(31, 142, 243, 0.19) 87.74%);
+        border-radius: 5px;
+    }
+
     .item-visible {
         position: absolute;
         width: 100%;
         height: 100%;
         z-index: 2;
-        transition: all 0.4s linear;
+        transition: all 0.3s linear;
     }
 
     .item-hidden {
@@ -395,7 +399,7 @@
         background: rgba(0, 0, 0, 0.1);
         border-radius: 5px;
         z-index: 1;
-        transition: all 0.4s linear;
+        transition: all 0.3s linear;
     }
 
     &__title {
@@ -424,7 +428,7 @@
     }
 
     &__slogan {
-        padding: 10px 0;
+        padding: 10px 5px;
         @include font($font-bold, $fsize-small, $color-basic, none);
         line-height: 21px;
         text-align: center;
@@ -433,12 +437,24 @@
 
 .item-image-container:hover .item-hidden,
 .item-image-container:active .item-hidden,
-.item-image-container:focus .item-hidden {
+.item-image-container:focus .item-hidden,
+// .item-title-container:hover,
+
+.shadow:hover .item-hidden 
+{
     cursor: pointer;
     background: rgba(0, 0, 0, 0.6);
     outline: none;
-    z-index: 3;
-    transition: all 0.4s linear;
+    z-index: 4;
+    transition: all 0.3s linear;
+
+}
+
+.item-image-container:hover .item-title-container,
+.item-image-container:active .item-title-container,
+.item-image-container:focus .item-title-container {
+    z-index: 0;
+    opacity: 0;
 }
 
 .social {
@@ -450,7 +466,7 @@
         max-width: 48px;
         max-height: 48px;
         margin: 15px;
-        transition: all 0.4s linear;
+        transition: all 0.3s linear;
 
         &__link {
             width: 100%;
@@ -467,17 +483,16 @@
     background-size: cover;
     overflow: hidden;
 
-  
-
+    @include tablet {
+        max-height: 1350px;
+    }
+ 
+ 
     @include phablet {
         max-height: 1100px;
     }
 
-    @include tablet {
-        max-height: 1150px;
-    }
-
-      @include mobile {
+    @include mobile {
         max-height: 900px;
     }
 
@@ -569,6 +584,7 @@
         }
     }
 }
+
 .instr-block--first {
     // position: absolute;
 }
@@ -587,7 +603,6 @@
 }
 
 /*footer*/
-
 .features-wrapper {
     padding-top: 60px;
 }
@@ -608,11 +623,14 @@
 }
 
 .footer-nav {
-    height: 165px;
     background: $color-block;
 
     .container {
         padding: 60px 15px;
+
+        @include phablet {
+            padding: 30px 15px;
+        }
     }
 }
 
@@ -625,7 +643,7 @@
     }
 
     .menu__link:before {
-        background-color: $color-basic;
+        background: $color-basic;
     }
 
     @include phablet {
@@ -640,7 +658,7 @@
 
     @include mobile {
         .menu__link {
-            font-size: 10px;
+            font-size: $fsize-small; 
         }
     }
 }
@@ -652,6 +670,7 @@
         padding: 20px 15px;
     }
 }
+
 .copyright {
     @include font($font-regular, 14px, $color-basic, none);
     text-align: center;
@@ -661,7 +680,23 @@
     max-width: 48px;
     max-height: 48px;
 }
+/*span*/
+.accent-text {
+    color: $color-accent;
+}
 
-main {
-    overflow: hidden;
+.bold-text {
+    font-weight: $weight-bold;
+}
+
+.accent-light {
+    display: inline-block;
+    border-bottom: 2px solid $color-basic;
+    padding-bottom: 2px;
+    font-size: 26px;
+    font-weight: $weight-bold;
+}
+
+.question-mark {
+    @include font($font-bold, 32px, #FF0D0D, none);
 }

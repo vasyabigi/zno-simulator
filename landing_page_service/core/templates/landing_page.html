@@ -6,14 +6,67 @@
     {{block.super}}  - Subjects
 {% endblock html_title%}
 
+{% block header_style %}
+    <style>.main-header {
+        height: 100vh;
+        {% with subjects|random as subject %}
+        background: url(/{{subject.image_top}}) 50% no-repeat;
+        {% endwith %}
+        background-size: cover; }
+        @media only screen and (max-width: 768px) {
+        .main-header {
+            background-position: right; } }
+        @media only screen and (max-width: 480px) {
+        .main-header {
+            background-position-x: 75%; } }
+        .main-header .container {
+        height: 100%;
+        padding: 0 15px; }</style>
+{% endblock header_style%}
+
 {% block content %}
+    <header class="header">
+        <section class="main-header">
+            <div class="container">
+                <div class="header-nav">
+                    <div class="logo">
+                        <img src="{% static "assets/img/logozno.png" %}" alt="znobot logo" class="logo__pic">
+                    </div>
+                    <nav class="menu-wrapper">
+                        <ul class="menu">
+                            <li class="menu__item"><a href="#read" class="menu__link">як користуватись?</a></li>
+                            <li class="menu__item"><a href="/about-us" class="menu__link">про нас</a></li>
+                        </ul>
+                        <div class="btn-wrapper">
+                            <a href="#bot" class="btn btn--menu">вибрати бота </a>
+                        </div>
+                    </nav>
+                </div>
+                <div class="header-content">
+                    <div class="slogan">
+                        <div class="slogan__title">Я уже користуюсь ЗНО ботом, <span class="accent-text"> а ти?</span>
+                        </div>
+                        <div class="slogan__subtitle">Не хочеш аби тебе послали в
+                            заслання? тоді мерщій проходити тести!</div>
+                    </div>
+                    <div class="btn-wrapper">
+                        <a href="#bot" class="btn btn--big">вибрати бота </a>
+                    </div>
+                    <div class="btn-wrapper">
+                        <a href="#read" class="btn btn--big btn--transparent">як користуватись? </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </header>
+
     <main>
+        {% comment %} 
         <section class="random">
             <div class="container">
                 <div class="heading">
                     <div class="heading__title">сектор приз від Андрійовича</div>
                 </div>
-
                 <div class="test-wrapper">
                     <div class="heading__subtitle-wrapper">
                         <div class="heading__subtitle">Я офігів від питання, а ти дай відповідь:</div>
@@ -26,7 +79,7 @@
                             <div class="test">
                                 <div class="test__question"><span class="question-mark">? </span>
                                     {{content}} </div>
-                                <div class="test__heading"> >> Варіанти відповідей: </div>
+                                <div class="test__heading"> &gt;&gt; Варіанти відповідей: </div>
                                 <ul class="test__prev">
                                     <li class="test__prev-answer" v-for="answer in choices"> -
                                         {{answer.content}} </li>
@@ -42,21 +95,20 @@
                                         <input type="radio" v-model="answer" v-bind:id="option.id"
                                             v-bind:value="option.content" style="display:none;">
                                         {{option.content}}</label>
-                                    <div v-if="answer === option.content"></div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </section>
+        </section> 
+        {% endcomment %}
 
         <section class="main-items" id="bot">
             <div class="container">
                 <div class="heading">
                     <div class="heading__title">вибери бота</div>
                 </div>
-
                 <ul class="list">
                 {% for subject in subjects %}      
                     {% if subject.title == "Українська мова та література" %}
@@ -86,9 +138,10 @@
                                         {% endif %}
                                     </ul>
                                 </div>
-                            </div>
-                            <div class="item-title-container">
-                                <h4 class="list__title">{{subject.title}}</h4>
+                                <div class="item-title-container">
+                                    <h4 class="list__title">{{subject.title}}</h4>
+                                </div>
+                                <div class="shadow"></div>
                             </div>
                         </div>
                     </li>
@@ -119,9 +172,10 @@
                                         {% endif %}
                                     </ul>
                                 </div>
-                            </div>
-                            <div class="item-title-container">
-                                <h4 class="list__title">{{subject.title}}</h4>
+                                <div class="item-title-container">
+                                    <h4 class="list__title">{{subject.title}}</h4>
+                                </div>
+                                <div class="shadow"></div>
                             </div>
                         </div>
                     </li>
@@ -169,4 +223,33 @@
         </section>
     </main>
 
+    <footer>
+        <section class="footer-nav">
+            <div class="container">
+                <div class="footer-menu-wrapper">
+                    <nav class="menu-wrapper">
+                        <ul class="menu">
+                            <li class="menu__item"><a href="/#read" class="menu__link">як користуватись?</a></li>
+                            <li class="menu__item"><a href="/about-us" class="menu__link">про нас</a></li>
+                        </ul>
+                        <div class="btn-wrapper">
+                            <a href="/#bot"><button class="btn btn--light">вибрати бота</button></a>
+                        </div>
+                    </nav>
+                    <div class="btn btn--light btn--top" id="toTop">
+                        <svg class="icon-svg">
+                            <use xlink:href="{% static "assets/img/sprite.svg#arrow" %}"></use>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="footer-copyright">
+            <div class="container">
+                <div class="copyright">Всі права захищено © 2020 </div>
+            </div>
+
+        </section>
+    </footer>
 {% endblock content %}

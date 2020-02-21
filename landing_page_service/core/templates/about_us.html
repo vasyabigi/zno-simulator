@@ -7,11 +7,22 @@
 {% endblock html_title%}
 
 {% block content %}
-    <ul>
-        {% for subject in subjects %}
-        <li><strong>{{subject}}</strong><hr/></li>
-        {% empty %}
-        <li>Nothing about us yet</li>
-        {% endfor %}
-    </ul>
+    <main>
+        <section>
+            <div class="container">
+                <div class="heading">
+                    <div class="heading__title">привіт!</div>
+                    <div class="heading__subtitle">Ми студенти <a href="https://beetroot.academy/" target="blank"
+                            style="color: #94ceb9;">“Beetroot Academy”</a>
+                    </div>
+                </div>
+            </div>
+            <div style="text-align: center;"><img src="{% static "assets/img/beetroot.png" %}" alt="beetroot"></div>
+
+            <div class="btn-wrapper" style="text-align: center; padding: 30px;">
+                <a href="/" class="btn btn--menu" style="padding: 10px; margin: 0 auto;"> повернутися </a>
+            </div>
+            <div class="heading__subtitle" style="text-align: center;">To be continued...</div>
+        </section>
+    </main>
 {% endblock content %}
