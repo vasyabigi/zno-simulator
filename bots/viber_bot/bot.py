@@ -23,7 +23,6 @@ from constants import (
 )
 
 from response_utils import (
-    ViberResponseTextMessage,
     get_conversation_started_response,
     get_question_response,
     get_explanation_response,

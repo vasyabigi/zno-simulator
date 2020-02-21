@@ -1,0 +1,79 @@
+@import 'variables.scss';
+@import 'mixin.scss';
+
+.btn {
+    width: 160px;
+    height: 46px;
+    margin-left: 30px;
+    border: none;
+    border-radius: 5px;
+    outline: none;
+    background: $color-block;
+    @include font($font-regular, $fsize-primary, $color-basic, none);
+    text-align: center;
+    transition: all 0.3s 0s linear;
+
+    &:hover,
+    &:active {
+        cursor: pointer;
+        transition: 0.3s linear;
+        box-shadow: 5px 5px 20px rgba(0, 0, 0, 0.4);
+    }
+}
+
+.btn--big {
+    width: 360px;
+
+    @include phablet {
+        width: 160px;
+        margin-left: 0;
+    }
+}
+
+.btn--transparent {
+    background: transparent;
+    transition: background 0.3s linear;
+}
+
+.btn--light {
+    background: $color-basic;
+    color: $color-accent;
+}
+
+/*top btn*/
+.btn--top {
+    width: 47px;
+    height: 47px;
+    background-color: $color-basic;
+    border-radius: 5px;
+    transition: all 0.3s linear;
+
+    .icon-svg {
+        width: 100%;
+        height: 100%;
+        padding-top: 19px;
+        padding-left: 15px;
+    }
+}
+
+@include mobile {
+    .btn--light {
+        width: 95px;
+        height: 28px;
+        font-size: 10px;
+    }
+
+    .btn--top {
+        width: 28px;
+        height: 28px;
+
+        .icon-svg {
+            max-width: 24px;
+            max-height: 24px;
+            padding-top: 10px;
+            padding-left: 4px;
+        }
+    }
+}
+
+

@@ -1,0 +1,25 @@
+@mixin font($font, $size,  $color, $transform) { 
+    font-family: $font;
+    font-size: $size;
+    // font-weight: $weight;
+    color: $color;   
+    text-transform: $transform;
+}
+
+@mixin tablet {
+    @media only screen and (max-width: #{$tablet-screen-width}) {
+        @content;
+    }
+}
+
+@mixin phablet {
+    @media only screen and (max-width: #{$phablet-screen-width}) {
+        @content;
+    }
+}
+
+@mixin mobile {
+    @media only screen and (max-width: #{$mobile-screen-width}) {
+        @content;
+    }
+}

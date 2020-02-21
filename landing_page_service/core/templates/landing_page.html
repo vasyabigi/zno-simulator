@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block html_title %}
+    {{block.super}}  - Subjects
+{% endblock html_title%}
+
+{% block content %}
+    <main>
+        {% comment %} <section class="random">
+            <div class="container">
+                <div class="heading">
+                    <div class="heading__title">сектор приз від Андрійовича</div>
+                </div>
+
+                <div class="test-wrapper">
+                    <div class="heading__subtitle-wrapper">
+                        <div class="heading__subtitle">Я офігів від питання, а ти дай відповідь:</div>
+                        <div class="heading__img">
+                            <img src="{% static "assets/img/symonenko.png" %}" alt="question picture" class="heading__pic">
+                        </div>
+                    </div>
+                    <div id="app">
+                        <div class="test-block">
+                            <div class="test">
+                                <div class="test__question"><span class="question-mark">? </span>
+                                    {{content}} </div>
+                                <div class="test__heading"> >> Варіанти відповідей: </div>
+                                <ul class="test__prev">
+                                    <li class="test__prev-answer" v-for="answer in choices"> -
+                                        {{answer.content}} </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="answer-block">
+                            <div class="answer">
+                                <div class="answers-wrapper answer__item" v-for="option in choices" v-bind:class="{'answer__item--true': answer === option.content && option.is_correct,
+                            'answer__item--false': answer === option.content && !option.is_correct}">
+                                    <label v-bind:for="option.id" class="answer__label">
+                                        <input type="radio" v-model="answer" v-bind:id="option.id"
+                                            v-bind:value="option.content" style="display:none;">
+                                        {{option.content}}</label>
+                                    <div v-if="answer === option.content"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section> {% endcomment %}
+
+        <section class="main-items" id="bot">
+            <div class="container">
+                <div class="heading">
+                    <div class="heading__title">вибери бота</div>
+                </div>
+
+                <ul class="list">
+                {% for subject in subjects %}
+                    {% if subject.title == "Українська мова та література" %}
+                    <li class="list__item list__item--main">
+                        <div class="item-container">
+                            <div class="item-image-container">
+                                <div class="item-visible">
+                                    <img src="{{subject.image_title}}" class="list__img" alt="lang">
+                                </div>
+                                <div class="item-hidden">
+                                    <p class="list__slogan">клікай на платформу та починай вчитись</p>
+                                    <ul class="social">
+                                        {% if subject.telegram_bot_name %}
+                                        <li class="social__item"><a href="https://t.me/{{subject.telegram_bot_name}}" class="social__link"><img src="{% static 'assets/img/telegram.png' %}" height="48" width="48"></a></li>
+                                        {% endif %}
+                                        {% if subject.viber_bot_name %}
+                                        <li class="social__item"><a href="viber://pa?chatURI={{subject.viber_bot_name}}" class="social__link"><img src="{% static 'assets/img/viber.png' %}" height="48" width="48"></a></li>
+                                        {% endif %}
+                                        {% if subject.messenger_bot_name %}
+                                        <li class="social__item"><a href="https://facebook.com/{{subject.messenger_bot_name}}" class="social__link"><img src="{% static 'assets/img/messenger.png' %}" height="48" width="48"></a></li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="item-title-container">
+                                <h4 class="list__title">{{subject.title}}</h4>
+                            </div>
+                        </div>
+                    </li>
+                    {% else %}
+                    <li class="list__item">
+                        <div class="item-container">
+                            <div class="item-image-container">
+                                <div class="item-visible">
+                                    <img src="{{subject.image_title}}" class="list__img" alt="lang">
+                                </div>
+                                <div class="item-hidden">
+                                    <p class="list__slogan">клікай на платформу та починай вчитись</p>
+                                    <ul class="social">
+                                        {% if subject.telegram_bot_name %}
+                                        <li class="social__item"><a href="https://t.me/{{subject.telegram_bot_name}}" class="social__link"><img src="{% static 'assets/img/telegram.png' %}" height="48" width="48"></a></li>
+                                        {% endif %}
+                                        {% if subject.viber_bot_name %}
+                                        <li class="social__item"><a href="viber://pa?chatURI={{subject.viber_bot_name}}" class="social__link"><img src="{% static 'assets/img/viber.png' %}" height="48" width="48"></a></li>
+                                        {% endif %}
+                                        {% if subject.messenger_bot_name %}
+                                        <li class="social__item"><a href="https://facebook.com/{{subject.messenger_bot_name}}" class="social__link"><img src="{% static 'assets/img/messenger.png' %}" height="48" width="48"></a></li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="item-title-container">
+                                <h4 class="list__title">{{subject.title}}</h4>
+                            </div>
+                        </div>
+                    </li>
+                    {% endif %}
+                {% empty %}
+                <li>No subjects yet</li>
+                {% endfor %}
+                </ul>
+            </div>
+        </section>
+
+        <section class="instruction" id="read">
+            <div class="container">
+                <div class="heading">
+                    <div class="heading__title heading__title--light">як користуватися? </div>
+                </div>
+
+                <div class="instr-wrapper">
+                    <div class="instr-block instr-block--first">
+                        <div class="instr-block__img"><img src="{% static "assets/img/hand1.png" %}" alt="how to use bot"
+                                class="instr-block__pic"></div>
+                        <div class="instr-block__desc">
+                            <div class="instr-block__text">Береш свій телефон</div>
+                            <div class="instr-block__number">1</div>
+                        </div>
+                    </div>
+                    <div class="instr-block instr-block--reverse">
+                        <div class="instr-block__img"><img src="{% static "assets/img/hand2.png" %}" alt="how to use bot"
+                                class="instr-block__pic"></div>
+                        <div class="instr-block__desc">
+                            <div class="instr-block__text">Вибираєш бота</div>
+                            <div class="instr-block__number">2</div>
+                        </div>
+                    </div>
+                    <div class="instr-block instr-block--last">
+                        <div class="instr-block__img"><img src="{% static "assets/img/hand3.png" %}" alt="how to use bot"
+                                class="instr-block__pic"></div>
+                        <div class="instr-block__desc">
+                            <div class="instr-block__text">Прокачуєш знання</div>
+                            <div class="instr-block__number">3</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+{% endblock content %}
