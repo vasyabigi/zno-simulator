@@ -1,0 +1,26 @@
+@import 'variables.scss';
+@import 'mixin.scss';
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+ul {
+    list-style-type: none;
+}
+
+a {
+    text-decoration: none;
+}
+
+.container {
+    width: 1170px;
+    max-width: 100%;
+    padding: 112px 15px;
+    margin: 0 auto;
+
+    @include tablet {
+        padding: 55px 15px;
+    }
+}
