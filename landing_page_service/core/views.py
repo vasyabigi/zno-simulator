@@ -9,5 +9,9 @@ def landing_page_view(request):
 
 
 def about_us_view(request):
+    subjects = ZNOSubject.objects.filter(is_active=True)
+
     variable = []
-    return render(request, "about_us.html", context={"about": variable,},)
+    return render(
+        request, "about_us.html", context={"about": variable, "subjects": subjects,},
+    )
