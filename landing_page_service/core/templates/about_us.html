@@ -3,7 +3,7 @@
 {% load static %}
 
 {% block html_title %}
-    {{block.super}}  - About
+    {{block.super}} | Про нас
 {% endblock html_title%}
 
 {% block content %}
@@ -12,12 +12,19 @@
             <div class="container">
                 <div class="heading">
                     <div class="heading__title">привіт!</div>
-                    <div class="heading__subtitle">Ми студенти <a href="https://beetroot.academy/" target="blank"
-                            style="color: #94ceb9;">“Beetroot Academy”</a>
+                    <div class="heading__subtitle">
+                        Ми студенти 
+                        <a href="https://beetroot.academy/" target="blank" style="color: #94ceb9;">“Beetroot Academy”</a>
+                    </div>
+                    <div style="text-align: center;">
+                        <img src="{% static "assets/img/us.jpg" %}" width="100%" alt="Beetroot students">
                     </div>
                 </div>
             </div>
-            <div style="text-align: center;"><img src="{% static "assets/img/beetroot.png" %}" alt="beetroot"></div>
+
+            <div style="text-align: center;">
+                <img src="{% static "assets/img/beetroot.png" %}" alt="Beetroot Logo">
+            </div>
 
             <div class="btn-wrapper" style="text-align: center; padding: 30px;">
                 <a href="/" class="btn btn--menu" style="padding: 10px; margin: 0 auto;"> повернутися </a>

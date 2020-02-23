@@ -3,7 +3,7 @@
 {% load static %}
 
 {% block html_title %}
-    {{block.super}}  - Subjects
+    {{block.super}}
 {% endblock html_title%}
 
 {% block header_style %}
@@ -30,12 +30,11 @@
             <div class="container">
                 <div class="header-nav">
                     <div class="logo">
-                        <img src="{% static "assets/img/logozno.png" %}" alt="znobot logo" class="logo__pic">
                     </div>
                     <nav class="menu-wrapper">
                         <ul class="menu">
                             <li class="menu__item"><a href="#read" class="menu__link">як користуватись?</a></li>
-                            <li class="menu__item"><a href="/about-us" class="menu__link">про нас</a></li>
+                            <li class="menu__item"><a href="about-us" class="menu__link">про нас</a></li>
                         </ul>
                         <div class="btn-wrapper">
                             <a href="#bot" class="btn btn--menu">вибрати бота </a>
@@ -61,7 +60,6 @@
     </header>
 
     <main>
-        {% comment %} 
         <section class="random">
             <div class="container">
                 <div class="heading">
@@ -77,12 +75,15 @@
                     <div id="app">
                         <div class="test-block">
                             <div class="test">
-                                <div class="test__question"><span class="question-mark">? </span>
-                                    {{content}} </div>
+                                <div class="test__question">
+                                    <span class="question-mark">? </span>
+                                    {% templatetag openvariable %}content{% templatetag closevariable %} 
+                                </div>
                                 <div class="test__heading"> &gt;&gt; Варіанти відповідей: </div>
                                 <ul class="test__prev">
                                     <li class="test__prev-answer" v-for="answer in choices"> -
-                                        {{answer.content}} </li>
+                                        {% templatetag openvariable %}answer.content{% templatetag closevariable %} 
+                                    </li>
                                 </ul>
                             </div>
                         </div>
@@ -94,16 +95,16 @@
                                     <label v-bind:for="option.id" class="answer__label">
                                         <input type="radio" v-model="answer" v-bind:id="option.id"
                                             v-bind:value="option.content" style="display:none;">
-                                        {{option.content}}</label>
+                                        {% templatetag openvariable %}option.content[0]{% templatetag closevariable %}
+                                    </label>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div>                
                 </div>
             </div>
         </section> 
-        {% endcomment %}
-
+        
         <section class="main-items" id="bot">
             <div class="container">
                 <div class="heading">
@@ -111,64 +112,39 @@
                 </div>
                 <ul class="list">
                 {% for subject in subjects %}      
-                    {% if subject.title == "Українська мова та література" %}
+                    {% if subject.wide_thumbnail %}
                     <li class="list__item list__item--main">
-                        <div class="item-container">
-                            <div class="item-image-container">
-                                <div class="item-visible">
-                                    <img src="{{subject.image_title}}" class="list__img" alt="lang">
-                                </div>
-                                <div class="item-hidden">
-                                    <p class="list__slogan">клікай на платформу та починай вчитись</p>
-                                    <ul class="social">
-                                        {% if subject.telegram_bot_name %}
-                                        <li class="social__item"><a href="https://t.me/{{subject.telegram_bot_name}}" class="social__link"><svg class="icon-svg">
-                                                    <use xlink:href="{% static "assets/img/sprite.svg#telegram" %}"></use>
-                                                </svg></a></li>
-                                        {% endif %}
-                                        {% if subject.viber_bot_name %}
-                                        <li class="social__item"><a href="viber://pa?chatURI={{subject.viber_bot_name}}" class="social__link"><svg class="icon-svg">
-                                                    <use xlink:href="{% static "assets/img/sprite.svg#viber" %}"></use>
-                                                </svg></a></li>
-                                        {% endif %}
-                                        {% if subject.messenger_bot_name %}
-                                        <li class="social__item"><a href="https://facebook.com/{{subject.messenger_bot_name}}" class="social__link"><svg class="icon-svg">
-                                                    <use xlink:href="{% static "assets/img/sprite.svg#messenger" %}"></use>
-                                                </svg></a></li>
-                                        {% endif %}
-                                    </ul>
-                                </div>
-                                <div class="item-title-container">
-                                    <h4 class="list__title">{{subject.title}}</h4>
-                                </div>
-                                <div class="shadow"></div>
-                            </div>
-                        </div>
-                    </li>
                     {% else %}
                     <li class="list__item">
+                    {% endif %}
                         <div class="item-container">
                             <div class="item-image-container">
                                 <div class="item-visible">
-                                    <img src="{{subject.image_title}}" class="list__img" alt="lang">
+                                    <img src="{{subject.image_title}}" class="list__img" alt="{{subject.title}}">
                                 </div>
                                 <div class="item-hidden">
                                     <p class="list__slogan">клікай на платформу та починай вчитись</p>
                                     <ul class="social">
                                         {% if subject.telegram_bot_name %}
-                                        <li class="social__item"><a href="https://t.me/{{subject.telegram_bot_name}}" class="social__link"><svg class="icon-svg">
-                                                    <use xlink:href="{% static "assets/img/sprite.svg#telegram" %}"></use>
-                                                </svg></a></li>
+                                        <li class="social__item">
+                                            <a href="https://t.me/{{subject.telegram_bot_name}}" class="social__link">
+                                                <img src="{% static "assets/img/telegram.png" %}" height="48" width="48" alt="Telegram">
+                                            </a>
+                                        </li>
                                         {% endif %}
                                         {% if subject.viber_bot_name %}
-                                        <li class="social__item"><a href="viber://pa?chatURI={{subject.viber_bot_name}}" class="social__link"><svg class="icon-svg">
-                                                    <use xlink:href="{% static "assets/img/sprite.svg#viber" %}"></use>
-                                                </svg></a></li>
+                                        <li class="social__item">
+                                            <a href="viber://pa?chatURI={{subject.viber_bot_name}}" class="social__link">
+                                                <img src="{% static "assets/img/viber.png" %}" height="48" width="48" alt="Viber">
+                                            </a>
+                                        </li>
                                         {% endif %}
                                         {% if subject.messenger_bot_name %}
-                                        <li class="social__item"><a href="https://facebook.com/{{subject.messenger_bot_name}}" class="social__link"><svg class="icon-svg">
-                                                    <use xlink:href="{% static "assets/img/sprite.svg#messenger" %}"></use>
-                                                </svg></a></li>
+                                        <li class="social__item">
+                                            <a href="https://facebook.com/{{subject.messenger_bot_name}}" class="social__link">
+                                                <img src="{% static "assets/img/messenger.png" %}" height="48" width="48" alt="Messenger">
+                                            </a>
+                                        </li>
                                         {% endif %}
                                     </ul>
                                 </div>
@@ -179,9 +155,8 @@
                             </div>
                         </div>
                     </li>
-                    {% endif %}
                 {% empty %}
-                <li>No subjects yet</li>
+                    <li>No subjects yet</li>
                 {% endfor %}
                 </ul>
             </div>
@@ -229,16 +204,18 @@
                 <div class="footer-menu-wrapper">
                     <nav class="menu-wrapper">
                         <ul class="menu">
-                            <li class="menu__item"><a href="/#read" class="menu__link">як користуватись?</a></li>
-                            <li class="menu__item"><a href="/about-us" class="menu__link">про нас</a></li>
+                            <li class="menu__item"><a href="#read" class="menu__link">як користуватись?</a></li>
+                            <li class="menu__item"><a href="about-us" class="menu__link">про нас</a></li>
                         </ul>
                         <div class="btn-wrapper">
-                            <a href="/#bot"><button class="btn btn--light">вибрати бота</button></a>
+                            <a href="#bot" class="btn btn--light">вибрати бота </a>
                         </div>
                     </nav>
                     <div class="btn btn--light btn--top" id="toTop">
-                        <svg class="icon-svg">
-                            <use xlink:href="{% static "assets/img/sprite.svg#arrow" %}"></use>
+                        <svg width="16" height="9" viewBox="0 0 16 9" fill="#278BFF" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M8.70711 0.292893C8.31658 -0.097631 7.68342 -0.097631 7.29289 0.292893L0.928932 6.65685C0.538408 7.04738 0.538408 7.68054 0.928932 8.07107C1.31946 8.46159 1.95262 8.46159 2.34315 8.07107L8 2.41421L13.6569 8.07107C14.0474 8.46159 14.6805 8.46159 15.0711 8.07107C15.4616 7.68054 15.4616 7.04738 15.0711 6.65685L8.70711 0.292893ZM9 2V1L7 1V2L9 2Z"
+                                fill="#288BFF" />
                         </svg>
                     </div>
                 </div>
@@ -249,7 +226,6 @@
             <div class="container">
                 <div class="copyright">Всі права захищено © 2020 </div>
             </div>
-
         </section>
     </footer>
 {% endblock content %}

@@ -8,13 +8,14 @@ from adminsortable2.admin import SortableAdminMixin
 class ZNOSubjectModel(SortableAdminMixin, admin.ModelAdmin):
     list_display = (
         "title",
-        "description",
         "telegram_bot_name",
         "viber_bot_name",
         "messenger_bot_name",
-        "image_title",
-        "image_top",
+        "wide_thumbnail",
         "is_active",
     )
-    list_editable = ("is_active",)
+    list_editable = (
+        "wide_thumbnail",
+        "is_active",
+    )
     sortable = "title"

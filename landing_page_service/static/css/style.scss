@@ -62,10 +62,20 @@
 }
 
 .logo {
-    min-width: 80px;
-
-    &__pic {
-        width: 100%;
+    display: inline-block;
+    width: 93px;
+    height: 80px;
+    background: url(../assets/img/logo2.svg) 50% no-repeat;
+    background-size: cover;
+    
+    &:hover,
+    &:active,
+    &:focus {
+        background: url(../assets/img/logoZNO.gif) 50% no-repeat;
+        width: 93px;
+        height: 80px;
+        background-size: cover;
+        background-position-y: 0;
     }
 }
 

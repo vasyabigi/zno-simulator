@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css?family=Work+Sans&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static "css/style.css" %}">
     <title>
-        {% block html_title %}ZNOBOT{% endblock html_title %}
+        {% block html_title %}ЗНО-бот{% endblock html_title %}
     </title>
 
     {% block header_style %}
@@ -21,10 +21,11 @@
     {% block content %}
     {% endblock content %}
   
-    <script src="./js/jquery.js"></script>
-    <script src="./js/vue.min.js"></script>
-    <script src="./js/main.js"></script>
-    <script src="./js/questions.js"></script>
+    <script src="{% static "js/jquery.js" %}"></script>
+    <script src="{% static "js/vue.min.js" %}"></script>
+    <script src="{% static "js/axios.min.js" %}"></script>
+    <script src="{% static "js/main.js" %}"></script>
+    <script src="{% static "js/questions.js" %}"></script>
 </body>
 
 </html>
