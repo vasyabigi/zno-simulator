@@ -1,5 +1,6 @@
 -r api_service/requirements.txt
 -r bots/telegram_bot/requirements.txt
+-r bots/messenger_bot/requirements.txt
 -r zno_parser/requirements.txt
 -r landing_page_service/requirements.txt
 flake8==3.7.8
